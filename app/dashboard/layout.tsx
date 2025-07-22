@@ -5,7 +5,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { checkUserNeedsOnboarding, getCurrentUser } from "@/lib/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Role } from "@prisma/client"
 
@@ -14,15 +14,14 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const needsOnboarding = await checkUserNeedsOnboarding();
-  
-  if (needsOnboarding) {
-    redirect("/onboarding");
-  }
-  
   const user = await getCurrentUser();
   if (!user) {
     redirect("/sign-in");
+  }
+  
+  // Check if user needs onboarding
+  if (user.buildingRoles.length === 0) {
+    redirect("/onboarding");
   }
   
   // Check if user has admin access
