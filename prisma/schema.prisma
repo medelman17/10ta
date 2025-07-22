@@ -1,0 +1,468 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+// ========================================
+// CORE ENTITIES
+// ========================================
+
+model Building {
+  id            String @id @default(cuid())
+  name          String
+  address       String
+  city          String
+  state         String
+  zipCode       String
+  floors        Int    @default(10) // Default 10 floors
+  unitsPerFloor Int    @default(8) // Default A-H units
+
+  units     Unit[]
+  issues    Issue[]
+  petitions Petition[]
+  meetings  Meeting[]
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  BuildingRole BuildingRole[]
+
+  @@index([city, state])
+}
+
+model Unit {
+  id         String @id @default(cuid())
+  buildingId String
+  floor      Int // 1-10
+  line       String // A-H
+  unitNumber String // Combined like "5B"
+
+  building  Building  @relation(fields: [buildingId], references: [id])
+  tenancies Tenancy[]
+  issues    Issue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([buildingId, unitNumber])
+  @@index([buildingId])
+  @@index([floor])
+  @@index([line])
+}
+
+model User {
+  id        String  @id @default(cuid())
+  clerkId   String  @unique
+  email     String
+  firstName String?
+  lastName  String?
+  phone     String?
+
+  // Privacy settings
+  shareContactInfo      Boolean @default(false)
+  allowNeighborMessages Boolean @default(false)
+  publicIssuesByDefault Boolean @default(false)
+
+  // Roles at building level
+  buildingRoles BuildingRole[]
+
+  // Relationships
+  tenancies          Tenancy[]
+  reportedIssues     Issue[]
+  communications     Communication[]
+  signatures         Signature[]
+  meetingAttendances MeetingAttendance[]
+  comments           Comment[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Petition  Petition[]
+  Meeting   Meeting[]
+
+  @@index([clerkId])
+  @@index([email])
+}
+
+model BuildingRole {
+  id         String @id @default(cuid())
+  userId     String
+  buildingId String
+  role       Role
+
+  user     User     @relation(fields: [userId], references: [id])
+  building Building @relation(fields: [buildingId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, buildingId, role])
+  @@index([userId])
+  @@index([buildingId])
+}
+
+enum Role {
+  TENANT
+  ASSOCIATION_ADMIN
+  BUILDING_ADMIN
+}
+
+// Tracks which units a user has lived in and when
+model Tenancy {
+  id        String    @id @default(cuid())
+  userId    String
+  unitId    String
+  startDate DateTime
+  endDate   DateTime?
+  isCurrent Boolean   @default(true)
+
+  user User @relation(fields: [userId], references: [id])
+  unit Unit @relation(fields: [unitId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([unitId])
+  @@index([isCurrent])
+  @@index([startDate, endDate])
+}
+
+// ========================================
+// ISSUE TRACKING
+// ========================================
+
+model Issue {
+  id         String @id @default(cuid())
+  buildingId String
+  unitId     String
+  reporterId String
+
+  title       String
+  description String        @db.Text
+  category    IssueCategory
+  severity    IssueSeverity
+  status      IssueStatus   @default(OPEN)
+
+  // Privacy
+  isPublic Boolean @default(true)
+
+  // AI features
+  embedding           Unsupported("vector(1536)")?
+  aiSuggestedCategory IssueCategory?
+  aiSuggestedSeverity IssueSeverity?
+
+  // Relationships
+  building Building @relation(fields: [buildingId], references: [id])
+  unit     Unit     @relation(fields: [unitId], references: [id])
+  reporter User     @relation(fields: [reporterId], references: [id])
+
+  media          Media[]
+  communications Communication[]
+  comments       Comment[]
+  relatedIssues  IssueRelation[] @relation("FromIssue")
+  relatedTo      IssueRelation[] @relation("ToIssue")
+
+  // Timestamps
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+
+  @@index([buildingId])
+  @@index([unitId])
+  @@index([reporterId])
+  @@index([category])
+  @@index([severity])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum IssueCategory {
+  PLUMBING
+  ELECTRICAL
+  HVAC
+  STRUCTURAL
+  PEST
+  SAFETY
+  NOISE
+  OTHER
+}
+
+enum IssueSeverity {
+  EMERGENCY // Immediate danger
+  HIGH // Major impact on habitability
+  MEDIUM // Significant inconvenience
+  LOW // Minor issue
+}
+
+enum IssueStatus {
+  OPEN
+  IN_PROGRESS
+  AWAITING_LANDLORD
+  RESOLVED
+  CLOSED
+}
+
+// For "me too" functionality and linking related issues
+model IssueRelation {
+  id           String       @id @default(cuid())
+  fromIssueId  String
+  toIssueId    String
+  relationType RelationType
+
+  fromIssue Issue @relation("FromIssue", fields: [fromIssueId], references: [id])
+  toIssue   Issue @relation("ToIssue", fields: [toIssueId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([fromIssueId, toIssueId])
+  @@index([fromIssueId])
+  @@index([toIssueId])
+}
+
+enum RelationType {
+  DUPLICATE
+  RELATED
+  CAUSED_BY
+  ME_TOO
+}
+
+// ========================================
+// COMMUNICATIONS
+// ========================================
+
+model Communication {
+  id      String  @id @default(cuid())
+  issueId String?
+  userId  String
+
+  type      CommunicationType
+  direction CommunicationDirection
+  subject   String?
+  content   String                 @db.Text
+
+  // Response tracking
+  responseReceived Boolean   @default(false)
+  responseDate     DateTime?
+  responseContent  String?   @db.Text
+
+  // Metadata
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  // Relationships
+  issue Issue?  @relation(fields: [issueId], references: [id])
+  user  User    @relation(fields: [userId], references: [id])
+  media Media[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([issueId])
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum CommunicationType {
+  EMAIL
+  PHONE_CALL
+  TEXT_MESSAGE
+  IN_PERSON
+  WRITTEN_LETTER
+  PORTAL_MESSAGE
+}
+
+enum CommunicationDirection {
+  SENT // Tenant to landlord
+  RECEIVED // Landlord to tenant
+}
+
+// ========================================
+// MEDIA & ATTACHMENTS
+// ========================================
+
+model Media {
+  id       String    @id @default(cuid())
+  url      String
+  type     MediaType
+  fileName String
+  fileSize Int
+  mimeType String
+
+  // Polymorphic association
+  issueId         String?
+  communicationId String?
+  commentId       String?
+
+  issue         Issue?         @relation(fields: [issueId], references: [id])
+  communication Communication? @relation(fields: [communicationId], references: [id])
+  comment       Comment?       @relation(fields: [commentId], references: [id])
+
+  uploadedBy String
+  createdAt  DateTime @default(now())
+
+  @@index([issueId])
+  @@index([communicationId])
+  @@index([commentId])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  AUDIO
+}
+
+// ========================================
+// COMMUNITY FEATURES
+// ========================================
+
+model Petition {
+  id          String @id @default(cuid())
+  buildingId  String
+  createdById String
+
+  title       String
+  description String    @db.Text
+  demands     String[] // Array of specific demands
+  deadline    DateTime?
+
+  status   PetitionStatus @default(OPEN)
+  isPublic Boolean        @default(false) // Can be viewed outside building
+
+  building   Building    @relation(fields: [buildingId], references: [id])
+  createdBy  User        @relation(fields: [createdById], references: [id])
+  signatures Signature[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  closedAt  DateTime?
+
+  @@index([buildingId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum PetitionStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  DELIVERED
+}
+
+model Signature {
+  id         String  @id @default(cuid())
+  petitionId String
+  userId     String
+  comment    String? @db.Text
+
+  petition Petition @relation(fields: [petitionId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([petitionId, userId])
+  @@index([petitionId])
+  @@index([userId])
+}
+
+model Meeting {
+  id          String @id @default(cuid())
+  buildingId  String
+  createdById String
+
+  title        String
+  description  String?  @db.Text
+  location     String
+  scheduledFor DateTime
+  duration     Int // in minutes
+
+  agenda      String[] // Array of agenda items
+  minutes     String?  @db.Text
+  decisions   Json[] // Array of decisions made
+  actionItems Json[] // Array of action items
+
+  building    Building            @relation(fields: [buildingId], references: [id])
+  createdBy   User                @relation(fields: [createdById], references: [id])
+  attendances MeetingAttendance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([buildingId])
+  @@index([scheduledFor])
+}
+
+model MeetingAttendance {
+  id         String     @id @default(cuid())
+  meetingId  String
+  userId     String
+  rsvpStatus RSVPStatus
+  attended   Boolean    @default(false)
+
+  meeting Meeting @relation(fields: [meetingId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([meetingId, userId])
+  @@index([meetingId])
+  @@index([userId])
+}
+
+enum RSVPStatus {
+  YES
+  NO
+  MAYBE
+}
+
+// ========================================
+// COMMENTS & ACTIVITY
+// ========================================
+
+model Comment {
+  id      String @id @default(cuid())
+  issueId String
+  userId  String
+  content String @db.Text
+
+  issue Issue   @relation(fields: [issueId], references: [id])
+  user  User    @relation(fields: [userId], references: [id])
+  media Media[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([issueId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ========================================
+// AUDIT & ANALYTICS
+// ========================================
+
+model AuditLog {
+  id         String  @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

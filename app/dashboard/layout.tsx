@@ -5,12 +5,19 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { checkUserNeedsOnboarding } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const needsOnboarding = await checkUserNeedsOnboarding();
+  
+  if (needsOnboarding) {
+    redirect("/onboarding");
+  }
   return (
     <SidebarProvider>
       <AppSidebar />
