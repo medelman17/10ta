@@ -6,11 +6,14 @@ async function main() {
   // Create a sample building
   const building = await prisma.building.upsert({
     where: { id: "sample-building-1" },
-    update: {},
+    update: {
+      name: "10 Ocean Blvd",
+      address: "10 Ocean Boulevard",
+    },
     create: {
       id: "sample-building-1",
-      name: "Sunset Towers",
-      address: "123 Main Street",
+      name: "10 Ocean Blvd",
+      address: "10 Ocean Boulevard",
       city: "New York",
       state: "NY",
       zipCode: "10001",
