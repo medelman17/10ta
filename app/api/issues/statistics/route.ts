@@ -1,42 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
-
-interface IssueStatistics {
-  overview: {
-    total: number;
-    open: number;
-    inProgress: number;
-    resolved: number;
-    averageResolutionTime: number; // in days
-  };
-  byCategory: Array<{
-    category: string;
-    count: number;
-    percentage: number;
-  }>;
-  bySeverity: Array<{
-    severity: string;
-    count: number;
-    percentage: number;
-  }>;
-  byStatus: Array<{
-    status: string;
-    count: number;
-    percentage: number;
-  }>;
-  timeline: Array<{
-    date: string;
-    newIssues: number;
-    resolvedIssues: number;
-  }>;
-  resolutionTimes: {
-    emergency: number;
-    high: number;
-    medium: number;
-    low: number;
-  };
-}
+import { IssueCategory, IssueSeverity, IssueStatus } from '@prisma/client';
 
 export async function GET(req: Request) {
   try {
@@ -71,116 +36,113 @@ export async function GET(req: Request) {
     // Calculate date filter
     const dateFilter = getDateFilter(timeRange);
 
-    // Build base query
-    const baseWhere: {
+    // Build query filters
+    type BaseFilters = {
       buildingId: string;
       isPublic: boolean;
       createdAt?: { gte: Date };
-    } = {
+    };
+    
+    const baseFilters: BaseFilters = {
       buildingId: targetBuildingId,
       isPublic: true,
     };
 
     if (dateFilter) {
-      baseWhere.createdAt = { gte: dateFilter };
+      baseFilters.createdAt = { gte: dateFilter };
     }
 
-    // Get all issues
-    const issues = await prisma.issue.findMany({
-      where: baseWhere,
-      select: {
-        id: true,
-        category: true,
-        severity: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
+    // Get all issues for statistics
+    const allIssues = await prisma.issue.findMany({
+      where: baseFilters,
+      include: {
+        unit: true,
       },
+      orderBy: { createdAt: 'desc' },
     });
 
-    // Calculate overview stats
-    const overview = {
-      total: issues.length,
-      open: issues.filter(i => i.status === 'OPEN').length,
-      inProgress: issues.filter(i => i.status === 'IN_PROGRESS' || i.status === 'AWAITING_LANDLORD').length,
-      resolved: issues.filter(i => i.status === 'RESOLVED' || i.status === 'CLOSED').length,
-      averageResolutionTime: 0,
+    // Calculate overview statistics
+    const totalIssues = allIssues.length;
+    const openIssues = allIssues.filter(i => 
+      i.status === 'OPEN' || i.status === 'IN_PROGRESS' || i.status === 'AWAITING_LANDLORD'
+    ).length;
+    const inProgressIssues = allIssues.filter(i => i.status === 'IN_PROGRESS').length;
+    const resolvedIssues = allIssues.filter(i => 
+      i.status === 'RESOLVED' || i.status === 'CLOSED'
+    ).length;
+
+    // Calculate average resolution time for resolved issues
+    const resolvedWithTime = allIssues.filter(i => 
+      (i.status === 'RESOLVED' || i.status === 'CLOSED') && i.updatedAt
+    );
+    const averageResolutionTime = resolvedWithTime.length > 0
+      ? Math.round(
+          resolvedWithTime.reduce((sum, issue) => {
+            const createdTime = new Date(issue.createdAt).getTime();
+            const resolvedTime = new Date(issue.updatedAt).getTime();
+            const daysToResolve = (resolvedTime - createdTime) / (1000 * 60 * 60 * 24);
+            return sum + daysToResolve;
+          }, 0) / resolvedWithTime.length
+        )
+      : 0;
+
+    // Category distribution
+    const categoryCount: Record<string, number> = {};
+    allIssues.forEach(issue => {
+      categoryCount[issue.category] = (categoryCount[issue.category] || 0) + 1;
+    });
+    const byCategory = Object.entries(categoryCount).map(([category, count]) => ({
+      category,
+      count,
+      percentage: Math.round((count / totalIssues) * 100) || 0,
+    })).sort((a, b) => b.count - a.count);
+
+    // Severity distribution
+    const severityCount: Record<string, number> = {};
+    allIssues.forEach(issue => {
+      severityCount[issue.severity] = (severityCount[issue.severity] || 0) + 1;
+    });
+    const bySeverity = Object.entries(severityCount).map(([severity, count]) => ({
+      severity,
+      count,
+      percentage: Math.round((count / totalIssues) * 100) || 0,
+    }));
+
+    // Status distribution
+    const statusCount: Record<string, number> = {};
+    allIssues.forEach(issue => {
+      statusCount[issue.status] = (statusCount[issue.status] || 0) + 1;
+    });
+    const byStatus = Object.entries(statusCount).map(([status, count]) => ({
+      status,
+      count,
+      percentage: Math.round((count / totalIssues) * 100) || 0,
+    }));
+
+    // Timeline data (issues over time)
+    const timeline = generateTimelineData(allIssues, timeRange);
+
+    // Resolution times by severity
+    const resolutionBySeverity = {
+      emergency: calculateAvgResolutionBySeverity(allIssues, 'EMERGENCY'),
+      high: calculateAvgResolutionBySeverity(allIssues, 'HIGH'),
+      medium: calculateAvgResolutionBySeverity(allIssues, 'MEDIUM'),
+      low: calculateAvgResolutionBySeverity(allIssues, 'LOW'),
     };
 
-    // Calculate average resolution time
-    const resolvedIssues = issues.filter(i => i.status === 'RESOLVED' || i.status === 'CLOSED');
-    if (resolvedIssues.length > 0) {
-      const totalResolutionTime = resolvedIssues.reduce((acc, issue) => {
-        const createdAt = new Date(issue.createdAt).getTime();
-        const resolvedAt = new Date(issue.updatedAt).getTime();
-        return acc + (resolvedAt - createdAt);
-      }, 0);
-      overview.averageResolutionTime = Math.round(totalResolutionTime / resolvedIssues.length / (1000 * 60 * 60 * 24)); // Convert to days
-    }
-
-    // Group by category
-    const categoryMap: Record<string, number> = {};
-    issues.forEach(issue => {
-      categoryMap[issue.category] = (categoryMap[issue.category] || 0) + 1;
-    });
-    
-    const byCategory = Object.entries(categoryMap)
-      .map(([category, count]) => ({
-        category,
-        count,
-        percentage: Math.round((count / issues.length) * 100),
-      }))
-      .sort((a, b) => b.count - a.count);
-
-    // Group by severity
-    const severityMap: Record<string, number> = {};
-    issues.forEach(issue => {
-      severityMap[issue.severity] = (severityMap[issue.severity] || 0) + 1;
-    });
-    
-    const bySeverity = Object.entries(severityMap)
-      .map(([severity, count]) => ({
-        severity,
-        count,
-        percentage: Math.round((count / issues.length) * 100),
-      }))
-      .sort((a, b) => {
-        const order = ['EMERGENCY', 'HIGH', 'MEDIUM', 'LOW'];
-        return order.indexOf(a.severity) - order.indexOf(b.severity);
-      });
-
-    // Group by status
-    const statusMap: Record<string, number> = {};
-    issues.forEach(issue => {
-      statusMap[issue.status] = (statusMap[issue.status] || 0) + 1;
-    });
-    
-    const byStatus = Object.entries(statusMap)
-      .map(([status, count]) => ({
-        status,
-        count,
-        percentage: Math.round((count / issues.length) * 100),
-      }))
-      .sort((a, b) => b.count - a.count);
-
-    // Create timeline data
-    const timeline = createTimelineData(issues, timeRange);
-
-    // Calculate resolution times by severity
-    const resolutionTimes = {
-      emergency: calculateAverageResolutionTime(resolvedIssues.filter(i => i.severity === 'EMERGENCY')),
-      high: calculateAverageResolutionTime(resolvedIssues.filter(i => i.severity === 'HIGH')),
-      medium: calculateAverageResolutionTime(resolvedIssues.filter(i => i.severity === 'MEDIUM')),
-      low: calculateAverageResolutionTime(resolvedIssues.filter(i => i.severity === 'LOW')),
-    };
-
-    const statistics: IssueStatistics = {
-      overview,
+    const statistics = {
+      overview: {
+        total: totalIssues,
+        open: openIssues,
+        inProgress: inProgressIssues,
+        resolved: resolvedIssues,
+        averageResolutionTime,
+      },
       byCategory,
       bySeverity,
       byStatus,
       timeline,
-      resolutionTimes,
+      resolutionTimes: resolutionBySeverity,
     };
 
     return NextResponse.json(statistics);
@@ -209,34 +171,23 @@ function getDateFilter(timeRange: string): Date | null {
   }
 }
 
-function createTimelineData(issues: Array<{ 
+interface IssueWithUnit {
   id: string;
-  category: string;
-  severity: string;
-  status: string;
   createdAt: Date;
   updatedAt: Date;
-}>, timeRange: string) {
-  const timeline: Array<{ date: string; newIssues: number; resolvedIssues: number }> = [];
-  const now = new Date();
-  let days = 30;
-  
-  switch (timeRange) {
-    case '7d':
-      days = 7;
-      break;
-    case '30d':
-      days = 30;
-      break;
-    case '90d':
-      days = 90;
-      break;
-    case '1y':
-      days = 365;
-      break;
-  }
+  status: IssueStatus;
+  severity: IssueSeverity;
+  category: IssueCategory;
+  unit: {
+    unitNumber: string;
+  };
+}
 
-  // Create date buckets
+function generateTimelineData(issues: IssueWithUnit[], timeRange: string) {
+  const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
+  const timeline = [];
+  const now = new Date();
+
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
@@ -244,43 +195,43 @@ function createTimelineData(issues: Array<{
     
     const nextDate = new Date(date);
     nextDate.setDate(nextDate.getDate() + 1);
-    
+
     const newIssues = issues.filter(issue => {
       const createdAt = new Date(issue.createdAt);
       return createdAt >= date && createdAt < nextDate;
     }).length;
-    
+
     const resolvedIssues = issues.filter(issue => {
       if (issue.status !== 'RESOLVED' && issue.status !== 'CLOSED') return false;
       const updatedAt = new Date(issue.updatedAt);
       return updatedAt >= date && updatedAt < nextDate;
     }).length;
-    
+
     timeline.push({
-      date: date.toISOString().split('T')[0],
+      date: date.toISOString(),
       newIssues,
       resolvedIssues,
     });
   }
-  
+
   return timeline;
 }
 
-function calculateAverageResolutionTime(issues: Array<{
-  id: string;
-  category: string;
-  severity: string;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-}>): number {
-  if (issues.length === 0) return 0;
-  
-  const totalTime = issues.reduce((acc, issue) => {
-    const createdAt = new Date(issue.createdAt).getTime();
-    const resolvedAt = new Date(issue.updatedAt).getTime();
-    return acc + (resolvedAt - createdAt);
+function calculateAvgResolutionBySeverity(issues: IssueWithUnit[], severity: string): number {
+  const resolvedIssues = issues.filter(i => 
+    i.severity === severity && 
+    (i.status === 'RESOLVED' || i.status === 'CLOSED') && 
+    i.updatedAt
+  );
+
+  if (resolvedIssues.length === 0) return 0;
+
+  const totalDays = resolvedIssues.reduce((sum, issue) => {
+    const createdTime = new Date(issue.createdAt).getTime();
+    const resolvedTime = new Date(issue.updatedAt).getTime();
+    const daysToResolve = (resolvedTime - createdTime) / (1000 * 60 * 60 * 24);
+    return sum + daysToResolve;
   }, 0);
-  
-  return Math.round(totalTime / issues.length / (1000 * 60 * 60 * 24)); // Convert to days
+
+  return Math.round(totalDays / resolvedIssues.length);
 }

@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import BuildingHeatMap from "@/components/dashboard/building-heatmap";
+import IssueStatistics from "@/components/dashboard/issue-statistics";
 
 export default async function AnalyticsPage() {
   const user = await getCurrentUser();
@@ -25,10 +26,7 @@ export default async function AnalyticsPage() {
       <div className="space-y-8">
         <BuildingHeatMap buildingId={buildingId} />
         
-        {/* TODO: Add more analytics components here */}
-        <div className="text-center py-12 text-muted-foreground">
-          <p>More analytics coming soon...</p>
-        </div>
+        <IssueStatistics buildingId={buildingId} />
       </div>
     </div>
   );

@@ -84,14 +84,16 @@ export async function GET(req: Request) {
     }
 
     // Build query filters
-    const issueFilters: {
+    type IssueFilters = {
       buildingId: string;
       isPublic: boolean;
       createdAt?: { gte: Date };
-      category?: { in: string[] };
-      severity?: { in: string[] };
-      status?: { in: string[] };
-    } = {
+      category?: { in: IssueCategory[] };
+      severity?: { in: IssueSeverity[] };
+      status?: { in: IssueStatus[] };
+    };
+    
+    const issueFilters: IssueFilters = {
       buildingId: targetBuildingId,
       isPublic: true, // Only show public issues in heat map
     };

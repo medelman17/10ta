@@ -20,6 +20,7 @@ import {
   Image as ImageIcon,
   Loader2 
 } from "lucide-react";
+import Image from "next/image";
 
 interface Issue {
   id: string;
@@ -226,10 +227,12 @@ export default function IssueList({ scope }: IssueListProps) {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
                     {issue.media.slice(0, 4).map((media) => (
                       <div key={media.id} className="relative aspect-square rounded-lg overflow-hidden">
-                        <img
+                        <Image
                           src={media.url}
                           alt="Issue photo"
-                          className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                          fill
+                          className="object-cover hover:scale-105 transition-transform cursor-pointer"
+                          sizes="(max-width: 768px) 50vw, 25vw"
                           onClick={() => window.open(media.url, '_blank')}
                         />
                       </div>

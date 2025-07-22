@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Camera, Upload, X, Loader2, Sparkles } from "lucide-react";
+import Image from "next/image";
 
 interface IssueReportFormProps {
   user: {
@@ -224,11 +225,13 @@ export default function IssueReportForm({ currentTenancy }: IssueReportFormProps
           {photos.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {photos.map((photo, index) => (
-                <div key={index} className="relative group">
-                  <img
+                <div key={index} className="relative group h-24">
+                  <Image
                     src={URL.createObjectURL(photo)}
                     alt={`Upload ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-lg"
+                    fill
+                    className="object-cover rounded-lg"
+                    sizes="(max-width: 768px) 50vw, 33vw"
                   />
                   <Button
                     type="button"

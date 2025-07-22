@@ -150,6 +150,7 @@ model Issue {
   category    IssueCategory
   severity    IssueSeverity
   status      IssueStatus   @default(OPEN)
+  location    String        @default("other")
 
   // Privacy
   isPublic Boolean @default(true)

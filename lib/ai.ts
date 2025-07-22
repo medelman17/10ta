@@ -48,5 +48,5 @@ export async function analyzeIssuePhoto(imageUrl: string): Promise<IssueAnalysis
     ],
   });
 
-  return object;
+  return object as IssueAnalysis;
 }
