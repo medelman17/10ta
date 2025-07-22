@@ -139,9 +139,13 @@ export async function POST(req: Request) {
         buildingId,
         status: 'OPEN',
         media: {
-          create: mediaUrls.map(url => ({
+          create: mediaUrls.map((url, index) => ({
             url,
             type: 'IMAGE',
+            fileName: photos[index]?.name || 'image.jpg',
+            fileSize: photos[index]?.size || 0,
+            mimeType: photos[index]?.type || 'image/jpeg',
+            uploadedBy: user.id,
           })),
         },
       },
