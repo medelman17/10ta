@@ -18,7 +18,7 @@ interface OnboardingFormProps {
   userId: string;
 }
 
-export default function OnboardingForm({ buildings, userId }: OnboardingFormProps) {
+export default function OnboardingForm({ buildings }: OnboardingFormProps) {
   const router = useRouter();
   const [selectedBuilding, setSelectedBuilding] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
@@ -52,7 +52,7 @@ export default function OnboardingForm({ buildings, userId }: OnboardingFormProp
         const error = await response.text();
         alert(`Error: ${error}`);
       }
-    } catch (error) {
+    } catch {
       alert("An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -126,7 +126,7 @@ export default function OnboardingForm({ buildings, userId }: OnboardingFormProp
       {selectedBuilding && selectedFloor && selectedLine && (
         <div className="rounded-lg border p-4 bg-muted/50">
           <p className="text-sm">
-            You're requesting access to unit{" "}
+            You&apos;re requesting access to unit{" "}
             <span className="font-semibold">
               {selectedFloor}{selectedLine}
             </span>{" "}

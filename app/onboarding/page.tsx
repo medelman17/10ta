@@ -26,7 +26,7 @@ export default async function OnboardingPage() {
         <div className="text-center">
           <h1 className="text-3xl font-bold">Welcome to 10ta</h1>
           <p className="mt-2 text-muted-foreground">
-            Let's get you set up with your building and unit
+            Let&apos;s get you set up with your building and unit
           </p>
         </div>
         

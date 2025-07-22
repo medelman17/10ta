@@ -8,10 +8,10 @@ import {
   MessageSquare,
   Settings,
   Users,
-  ClipboardList,
   BarChart3,
   Calendar,
   HelpCircle,
+  Shield,
 } from "lucide-react"
 
 import {
@@ -28,7 +28,6 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
 
 const data = {
@@ -114,9 +113,49 @@ const data = {
       icon: Settings,
     },
   ],
+  navAdmin: [
+    {
+      title: "Admin Dashboard",
+      url: "/dashboard/admin",
+      icon: Shield,
+      items: [
+        {
+          title: "Manage Tenants",
+          url: "/dashboard/admin/tenants",
+        },
+        {
+          title: "Unit Management",
+          url: "/dashboard/admin/units",
+        },
+        {
+          title: "Access Control",
+          url: "/dashboard/admin/access",
+        },
+      ],
+    },
+  ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentPropsWithoutRef<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentPropsWithoutRef<typeof Sidebar> {
+  user?: {
+    email: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    tenancies?: Array<{
+      unit: {
+        unitNumber: string;
+      };
+    }>;
+  };
+  isAdmin?: boolean;
+}
+
+export function AppSidebar({ user, isAdmin, ...props }: AppSidebarProps) {
+  const currentUnit = user?.tenancies?.[0]?.unit;
+  const userName = user?.firstName && user?.lastName 
+    ? `${user.firstName} ${user.lastName}` 
+    : user?.email || "User";
+    
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -167,6 +206,40 @@ export function AppSidebar({ ...props }: React.ComponentPropsWithoutRef<typeof S
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administration</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {data.navAdmin.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                    {item.items?.length ? (
+                      <SidebarMenuSub>
+                        {item.items.map((item) => (
+                          <SidebarMenuSubItem key={item.title}>
+                            <SidebarMenuSubButton asChild>
+                              <a href={item.url}>
+                                <span>{item.title}</span>
+                              </a>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    ) : null}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
@@ -191,8 +264,10 @@ export function AppSidebar({ ...props }: React.ComponentPropsWithoutRef<typeof S
               <div className="flex items-center gap-2">
                 <div className="size-8 rounded-full bg-muted" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">John Doe</span>
-                  <span className="truncate text-xs">Unit 5B</span>
+                  <span className="truncate font-semibold">{userName}</span>
+                  <span className="truncate text-xs">
+                    {currentUnit ? `Unit ${currentUnit.unitNumber}` : "Tenant"}
+                  </span>
                 </div>
               </div>
             </SidebarMenuButton>
