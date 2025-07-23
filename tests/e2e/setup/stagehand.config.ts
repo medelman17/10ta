@@ -59,10 +59,20 @@ export const commonActions = {
   signIn: async (page: any, userKey: keyof typeof TEST_USERS) => {
     const user = TEST_USERS[userKey];
     await page.goto(`${getTestUrl()}/sign-in`);
+    
+    // Step 1: Enter email
     await page.act(`enter ${user.email} in the email field`);
+    await page.act('click continue or press enter');
+    
+    // Wait for password field to appear
+    await page.waitForSelector('input[type="password"]', { timeout: 5000 });
+    
+    // Step 2: Enter password
     await page.act(`enter ${user.password} in the password field`);
-    await page.act('click the sign in button');
-    await page.waitForURL('**/dashboard');
+    await page.act('click continue or sign in button');
+    
+    // Wait for redirect to dashboard
+    await page.waitForURL('**/dashboard', { timeout: 10000 });
   },
   
   signOut: async (page: any) => {
