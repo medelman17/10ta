@@ -14,13 +14,6 @@ export default async function CommunicationsPage() {
 
   return (
     <div className="container mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Communications</h1>
-        <p className="text-muted-foreground mt-2">
-          Document and track all interactions with your landlord
-        </p>
-      </div>
-
       <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Log New Communication */}
         <Card className="flex flex-col">

@@ -93,13 +93,6 @@ export default async function AccessControlPage() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Access Control</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage administrative permissions for {building.name}
-        </p>
-      </div>
-
       <Tabs defaultValue="admins" className="space-y-6">
         <TabsList>
           <TabsTrigger value="admins">Administrators</TabsTrigger>

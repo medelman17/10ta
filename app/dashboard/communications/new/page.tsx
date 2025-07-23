@@ -40,13 +40,6 @@ export default async function NewCommunicationPage({ searchParams }: PageProps) 
   
   return (
     <div className="container mx-auto max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Log Communication</h1>
-        <p className="text-muted-foreground mt-2">
-          Document your interactions with landlords, property managers, or maintenance staff
-        </p>
-      </div>
-      
       <SimpleCommunicationForm 
         userId={user.id}
         unitId={currentTenancy?.unitId}

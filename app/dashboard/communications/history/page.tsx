@@ -14,13 +14,7 @@ export default async function CommunicationHistoryPage() {
 
   return (
     <div className="container mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Communication History</h1>
-          <p className="text-muted-foreground mt-2">
-            Track all your interactions with landlords and property management
-          </p>
-        </div>
+      <div className="flex justify-end mb-8">
         <Button asChild>
           <Link href="/dashboard/communications/new">
             <Plus className="h-4 w-4 mr-2" />

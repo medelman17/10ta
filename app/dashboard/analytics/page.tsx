@@ -15,14 +15,7 @@ export default async function AnalyticsPage() {
   const buildingId = currentTenancy?.unit?.buildingId;
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Building Analytics</h1>
-        <p className="text-muted-foreground mt-2">
-          Visualize issue patterns and trends across your building
-        </p>
-      </div>
-      
+    <div className="container mx-auto">
       <div className="space-y-8">
         <BuildingHeatMap buildingId={buildingId} />
         

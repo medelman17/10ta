@@ -19,13 +19,6 @@ export default async function NewIssuePage() {
   return (
     <div className="container mx-auto py-8">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Report an Issue</h1>
-          <p className="text-muted-foreground mt-2">
-            Document property issues with photos and get AI-powered categorization to help communicate with your landlord.
-          </p>
-        </div>
-        
         <IssueReportForm 
           user={user}
           currentTenancy={currentTenancy}

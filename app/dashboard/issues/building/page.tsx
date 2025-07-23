@@ -17,13 +17,7 @@ export default async function BuildingIssuesPage() {
 
   return (
     <div className="container mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Building Issues</h1>
-          <p className="text-muted-foreground mt-2">
-            See public issues reported by other tenants in {buildingName}
-          </p>
-        </div>
+      <div className="flex justify-end mb-8">
         <Button asChild>
           <Link href="/dashboard/issues/new">
             <Plus className="h-4 w-4 mr-2" />

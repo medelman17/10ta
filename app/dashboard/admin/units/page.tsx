@@ -114,16 +114,6 @@ export default async function UnitsManagementPage() {
   
   return (
     <div className="container mx-auto space-y-6">
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Building2 className="h-6 w-6" />
-          <h1 className="text-3xl font-bold">Unit Management</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Manage units and tenant assignments for {currentBuilding.name}
-        </p>
-      </div>
-      
       <Tabs defaultValue="grid" className="space-y-4">
         <TabsList>
           <TabsTrigger value="grid">Unit Grid</TabsTrigger>

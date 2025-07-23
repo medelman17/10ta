@@ -2,14 +2,7 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome to your tenant association platform
-        </p>
-      </div>
-      
+    <div className="flex flex-col gap-4">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border p-4">
           <h3 className="font-semibold">Active Issues</h3>

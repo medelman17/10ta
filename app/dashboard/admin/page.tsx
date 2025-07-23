@@ -58,13 +58,6 @@ export default async function AdminDashboardPage() {
   
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground">
-          Manage buildings, tenants, and platform settings
-        </p>
-      </div>
-      
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {buildingStats.map((stat) => (
           <div key={stat.building.id} className="rounded-lg border p-6">

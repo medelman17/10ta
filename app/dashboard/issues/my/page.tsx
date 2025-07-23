@@ -14,13 +14,7 @@ export default async function MyIssuesPage() {
 
   return (
     <div className="container mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">My Issues</h1>
-          <p className="text-muted-foreground mt-2">
-            Track and manage the issues you&apos;ve reported
-          </p>
-        </div>
+      <div className="flex justify-end mb-8">
         <Button asChild>
           <Link href="/dashboard/issues/new">
             <Plus className="h-4 w-4 mr-2" />
