@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -43,15 +45,15 @@ export default function DashboardPage() {
         <div className="rounded-lg border p-4">
           <h3 className="mb-4 font-semibold">Quick Actions</h3>
           <div className="flex flex-col gap-2">
-            <a href="/dashboard/issues/new" className="text-sm text-blue-600 hover:underline">
+            <Link href="/dashboard/issues/new" className="text-sm text-blue-600 hover:underline">
               Report an Issue
-            </a>
-            <a href="/dashboard/communications/new" className="text-sm text-blue-600 hover:underline">
+            </Link>
+            <Link href="/dashboard/communications/new" className="text-sm text-blue-600 hover:underline">
               Log Communication
-            </a>
-            <a href="/dashboard/association/petitions/new" className="text-sm text-blue-600 hover:underline">
+            </Link>
+            <Link href="/dashboard/association/petitions/new" className="text-sm text-blue-600 hover:underline">
               Create Petition
-            </a>
+            </Link>
           </div>
         </div>
       </div>

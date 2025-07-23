@@ -25,7 +25,6 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { 
-  PERMISSIONS, 
   PERMISSION_CATEGORIES, 
   PERMISSION_DESCRIPTIONS,
   Permission 

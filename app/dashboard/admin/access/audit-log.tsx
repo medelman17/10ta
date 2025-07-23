@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,7 +16,6 @@ import {
   Shield, 
   ShieldOff,
   Clock,
-  User,
   Loader2
 } from "lucide-react";
 import { format } from "date-fns";
@@ -55,6 +54,7 @@ export default function PermissionAuditLog({ buildingId }: PermissionAuditLogPro
 
   useEffect(() => {
     fetchAuditLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buildingId]);
 
   const fetchAuditLogs = async () => {

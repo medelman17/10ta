@@ -50,7 +50,7 @@ const roleInfo = {
   },
 };
 
-export default function RoleTemplates({ buildingId }: RoleTemplatesProps) {
+export default function RoleTemplates({ }: RoleTemplatesProps) {
   return (
     <div className="space-y-6">
       <div>
