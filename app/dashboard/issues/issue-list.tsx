@@ -59,8 +59,8 @@ export default function IssueList({ scope }: IssueListProps) {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [severityFilter, setSeverityFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [severityFilter, setSeverityFilter] = useState("all");
 
   useEffect(() => {
     const fetchIssues = async () => {
@@ -83,8 +83,8 @@ export default function IssueList({ scope }: IssueListProps) {
   const filteredIssues = issues.filter(issue => {
     const matchesSearch = issue.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          issue.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !categoryFilter || issue.category === categoryFilter;
-    const matchesSeverity = !severityFilter || issue.severity === severityFilter;
+    const matchesCategory = categoryFilter === "all" || issue.category === categoryFilter;
+    const matchesSeverity = severityFilter === "all" || issue.severity === severityFilter;
     
     return matchesSearch && matchesCategory && matchesSeverity;
   });
@@ -139,7 +139,7 @@ export default function IssueList({ scope }: IssueListProps) {
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="all">All Categories</SelectItem>
             <SelectItem value="plumbing">Plumbing</SelectItem>
             <SelectItem value="electrical">Electrical</SelectItem>
             <SelectItem value="structural">Structural</SelectItem>
@@ -156,7 +156,7 @@ export default function IssueList({ scope }: IssueListProps) {
             <SelectValue placeholder="Severity" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Severities</SelectItem>
+            <SelectItem value="all">All Severities</SelectItem>
             <SelectItem value="emergency">Emergency</SelectItem>
             <SelectItem value="high">High</SelectItem>
             <SelectItem value="medium">Medium</SelectItem>
