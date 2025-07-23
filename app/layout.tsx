@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { EnsureUserSync } from "@/components/auth/ensure-user-sync";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,6 +33,7 @@ export default function RootLayout({
         >
           <EnsureUserSync>
             {children}
+            <Toaster position="bottom-right" />
           </EnsureUserSync>
         </body>
       </html>

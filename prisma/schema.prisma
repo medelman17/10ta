@@ -26,10 +26,11 @@ model Building {
   floors        Int    @default(10) // Default 10 floors
   unitsPerFloor Int    @default(8) // Default A-H units
 
-  units     Unit[]
-  issues    Issue[]
-  petitions Petition[]
-  meetings  Meeting[]
+  units        Unit[]
+  issues       Issue[]
+  petitions    Petition[]
+  meetings     Meeting[]
+  unitRequests UnitRequest[]
 
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -45,9 +46,10 @@ model Unit {
   line       String // A-H
   unitNumber String // Combined like "5B"
 
-  building  Building  @relation(fields: [buildingId], references: [id])
-  tenancies Tenancy[]
-  issues    Issue[]
+  building     Building      @relation(fields: [buildingId], references: [id])
+  tenancies    Tenancy[]
+  issues       Issue[]
+  unitRequests UnitRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -81,6 +83,8 @@ model User {
   signatures         Signature[]
   meetingAttendances MeetingAttendance[]
   comments           Comment[]
+  unitRequests       UnitRequest[]
+  processedRequests  UnitRequest[] @relation("ProcessedRequests")
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -133,6 +137,42 @@ model Tenancy {
   @@index([unitId])
   @@index([isCurrent])
   @@index([startDate, endDate])
+}
+
+// Unit request tracking for admin approval workflow
+model UnitRequest {
+  id         String   @id @default(cuid())
+  userId     String
+  buildingId String
+  unitId     String?  // Specific unit requested, null if any unit
+  
+  status     UnitRequestStatus @default(PENDING)
+  message    String? @db.Text // Optional message from tenant
+  adminNotes String? @db.Text // Notes from admin when approving/rejecting
+  
+  // Relationships
+  user          User     @relation(fields: [userId], references: [id])
+  building      Building @relation(fields: [buildingId], references: [id])
+  requestedUnit Unit?    @relation(fields: [unitId], references: [id])
+  
+  processedBy   String?
+  processedByUser User? @relation("ProcessedRequests", fields: [processedBy], references: [id])
+  processedAt   DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([buildingId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum UnitRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
 }
 
 // ========================================
