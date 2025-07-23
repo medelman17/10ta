@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "tsx prisma/seed.ts",
-    "postbuild": "prisma migrate deploy || prisma db push --accept-data-loss"
+    "postbuild": "prisma migrate deploy || prisma db push --accept-data-loss",
+    "test-users:create": "node scripts/manage-test-users.js create",
+    "test-users:delete": "node scripts/manage-test-users.js delete",
+    "test-users:list": "node scripts/manage-test-users.js list"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
