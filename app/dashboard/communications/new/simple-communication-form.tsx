@@ -42,6 +42,13 @@ interface CommunicationFormProps {
   userId: string;
   unitId?: string;
   issueId?: string;
+  availableIssues?: Array<{
+    id: string;
+    title: string;
+    createdAt: Date;
+    status: string;
+    category: string;
+  }>;
 }
 
 const communicationTypes = [
@@ -63,7 +70,7 @@ const contactRoles = [
   "Other"
 ];
 
-export default function SimpleCommunicationForm({ issueId }: CommunicationFormProps) {
+export default function SimpleCommunicationForm({ issueId: initialIssueId, availableIssues = [] }: CommunicationFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   
@@ -80,6 +87,7 @@ export default function SimpleCommunicationForm({ issueId }: CommunicationFormPr
   const [followUpRequired, setFollowUpRequired] = useState(false);
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [files, setFiles] = useState<File[]>([]);
+  const [issueId, setIssueId] = useState(initialIssueId || "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -105,7 +113,7 @@ export default function SimpleCommunicationForm({ issueId }: CommunicationFormPr
       if (followUpDate) {
         formData.append("followUpDate", followUpDate.toISOString());
       }
-      if (issueId) {
+      if (issueId && issueId !== "none") {
         formData.append("issueId", issueId);
       }
       
@@ -143,6 +151,38 @@ export default function SimpleCommunicationForm({ issueId }: CommunicationFormPr
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Link to Issue */}
+      {availableIssues.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Link to Issue</CardTitle>
+            <CardDescription>
+              Connect this communication to an existing issue
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Select value={issueId} onValueChange={setIssueId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select an issue (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No issue selected</SelectItem>
+                {availableIssues.map((issue) => (
+                  <SelectItem key={issue.id} value={issue.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{issue.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {issue.category} • {issue.status} • {new Date(issue.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Quick Type Selection */}
       <Card>
         <CardHeader>

@@ -290,12 +290,14 @@ export default function CommunicationList() {
                         </p>
                         
                         {comm.issue && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">Related to:</span>
-                            <a href={`/dashboard/issues/${comm.issue.id}`} className="text-primary hover:underline">
-                              {comm.issue.title}
-                            </a>
+                          <div className="flex items-center gap-2 text-sm mt-2">
+                            <Badge variant="secondary" className="gap-1">
+                              <AlertCircle className="h-3 w-3" />
+                              <span>Linked to issue:</span>
+                              <a href={`/dashboard/issues/${comm.issue.id}`} className="font-medium hover:underline">
+                                {comm.issue.title}
+                              </a>
+                            </Badge>
                           </div>
                         )}
                         

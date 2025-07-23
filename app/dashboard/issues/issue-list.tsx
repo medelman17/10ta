@@ -18,7 +18,8 @@ import {
   User, 
   Search, 
   Image as ImageIcon,
-  Loader2 
+  Loader2,
+  ChevronRight 
 } from "lucide-react";
 import Image from "next/image";
 
@@ -266,6 +267,15 @@ export default function IssueList({ scope }: IssueListProps) {
                       <Calendar className="h-4 w-4" />
                       <span>{new Date(issue.createdAt).toLocaleDateString()}</span>
                     </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-end pt-2">
+                    <Button variant="ghost" size="sm" asChild>
+                      <a href={`/dashboard/issues/${issue.id}`}>
+                        View Details
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </a>
+                    </Button>
                   </div>
                 </div>
               </CardContent>
