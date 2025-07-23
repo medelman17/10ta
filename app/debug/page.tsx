@@ -9,9 +9,44 @@ import { AlertCircle, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 export default function DebugPage() {
   const { isLoaded, isSignedIn, userId } = useAuth();
-  const [debugData, setDebugData] = useState<any>(null);
+  const [debugData, setDebugData] = useState<{
+    clerk: {
+      authenticated: boolean;
+      userId: string | null;
+      user: {
+        id: string;
+        email: string;
+        firstName: string | null;
+        lastName: string | null;
+      } | null;
+    };
+    database: {
+      userExists: boolean;
+      user: {
+        id: string;
+        email: string;
+        firstName: string | null;
+        lastName: string | null;
+        buildingRoles: Array<{ id: string; role: string; buildingId: string }>;
+        tenancies: Array<{ id: string; unitId: string; isCurrent: boolean }>;
+      } | null;
+    };
+    webhook: {
+      secretConfigured: boolean;
+      secretFormat: string;
+    };
+  } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [syncResult, setSyncResult] = useState<any>(null);
+  const [syncResult, setSyncResult] = useState<{
+    message: string;
+    user?: {
+      id: string;
+      clerkId: string;
+      email: string;
+    };
+    isNew?: boolean;
+    error?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (isLoaded) {
@@ -41,7 +76,7 @@ export default function DebugPage() {
       await fetchDebugData();
     } catch (error) {
       console.error("Failed to sync user:", error);
-      setSyncResult({ error: "Failed to sync user" });
+      setSyncResult({ message: "Failed to sync user", error: "Failed to sync user" });
     }
     setLoading(false);
   };
@@ -118,7 +153,7 @@ export default function DebugPage() {
                     <div className="text-sm">
                       <p className="font-medium mb-1">Webhook secret is incorrectly configured!</p>
                       <p className="text-muted-foreground">
-                        The CLERK_WEBHOOK_SECRET should be a signing secret starting with 'whsec_', not a URL.
+                        The CLERK_WEBHOOK_SECRET should be a signing secret starting with &apos;whsec_&apos;, not a URL.
                       </p>
                       <p className="text-muted-foreground mt-2">
                         To fix: Go to Clerk Dashboard → Webhooks → Copy the signing secret and update your .env.local file.
