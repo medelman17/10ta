@@ -35,6 +35,7 @@ model Building {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   BuildingRole BuildingRole[]
+  permissions  AdminPermission[]
 
   @@index([city, state])
 }
@@ -85,6 +86,10 @@ model User {
   comments           Comment[]
   unitRequests       UnitRequest[]
   processedRequests  UnitRequest[] @relation("ProcessedRequests")
+  
+  // Admin permissions
+  permissions        AdminPermission[] @relation("UserPermissions")
+  grantedPermissions AdminPermission[] @relation("GrantedPermissions")
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -519,5 +524,48 @@ model AuditLog {
 
   @@index([userId])
   @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ========================================
+// ADMIN & PERMISSIONS
+// ========================================
+
+model AdminPermission {
+  id         String    @id @default(cuid())
+  userId     String
+  buildingId String
+  permission String    // e.g., "manage_issues", "view_all_tenants"
+  
+  grantedBy  String    // User who granted this permission
+  grantedAt  DateTime  @default(now())
+  expiresAt  DateTime? // Optional expiration for temporary permissions
+  
+  // Relations
+  user       User      @relation("UserPermissions", fields: [userId], references: [id])
+  building   Building  @relation(fields: [buildingId], references: [id])
+  granter    User      @relation("GrantedPermissions", fields: [grantedBy], references: [id])
+  
+  @@unique([userId, buildingId, permission])
+  @@index([userId, buildingId])
+  @@index([permission])
+  @@index([expiresAt])
+}
+
+model PermissionAuditLog {
+  id         String   @id @default(cuid())
+  userId     String   // User who was affected
+  buildingId String
+  permission String
+  action     String   // "granted" or "revoked"
+  
+  performedBy String  // User who performed the action
+  reason      String? // Optional reason for the change
+  metadata    Json?   // Additional context
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId, buildingId])
+  @@index([performedBy])
   @@index([createdAt])
 }
