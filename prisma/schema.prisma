@@ -745,6 +745,12 @@ model PermissionAuditLog {
 // ========================================
 
 enum DocumentCategory {
+  // Tenant Information
+  TENANT_RIGHTS
+  BUILDING_POLICIES
+  MAINTENANCE_GUIDES
+  LEGAL_FORMS
+  
   // Personal Records
   LEASE_AGREEMENT
   RENT_RECEIPTS
@@ -765,10 +771,15 @@ enum DocumentCategory {
   TEXT_SCREENSHOTS
   VOICEMAIL_TRANSCRIPTS
   
+  // Administrative
+  MEETING_MINUTES
+  FINANCIAL_REPORTS
+  NEWSLETTERS
+  OTHER
+  
   // Legal Documentation
   LEGAL_NOTICES
   COURT_DOCUMENTS
-  TENANT_RIGHTS
   COMPLAINTS_FILED
   
   // Building Information
@@ -784,7 +795,6 @@ enum DocumentCategory {
   FEE_NOTICES
   
   // Meeting Records
-  MEETING_MINUTES
   MEETING_AGENDAS
   PETITIONS
   
@@ -792,8 +802,6 @@ enum DocumentCategory {
   HOW_TO_GUIDES
   TEMPLATES
   CHECKLISTS
-  
-  OTHER
 }
 
 enum DocumentVisibility {

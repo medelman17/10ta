@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { EnsureUserSync } from "@/components/auth/ensure-user-sync";
+import { QueryProvider } from "@/app/providers/query-provider";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -32,8 +33,10 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <EnsureUserSync>
-            {children}
-            <Toaster position="bottom-right" />
+            <QueryProvider>
+              {children}
+              <Toaster position="bottom-right" />
+            </QueryProvider>
           </EnsureUserSync>
         </body>
       </html>
