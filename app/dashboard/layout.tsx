@@ -40,7 +40,7 @@ export default async function DashboardLayout({
             {/* Breadcrumb will go here */}
           </div>
         </header>
-        <main className="flex-1">
+        <main className="flex-1 p-6">
           {children}
         </main>
       </SidebarInset>

@@ -13,7 +13,7 @@ export default async function IssuesPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Issues</h1>
         <p className="text-muted-foreground mt-2">
@@ -50,7 +50,7 @@ export default async function IssuesPage() {
               My Issues
             </CardTitle>
             <CardDescription>
-              View and manage issues you've reported
+              View and manage issues you&apos;ve reported
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -123,7 +123,7 @@ export default async function IssuesPage() {
             <div>
               <p className="font-medium">Be specific about location</p>
               <p className="text-sm text-muted-foreground">
-                Include details like "under kitchen sink" or "bedroom window"
+                Include details like &quot;under kitchen sink&quot; or &quot;bedroom window&quot;
               </p>
             </div>
           </div>
@@ -132,7 +132,7 @@ export default async function IssuesPage() {
             <div>
               <p className="font-medium">Mark urgent issues appropriately</p>
               <p className="text-sm text-muted-foreground">
-                Use "Emergency" only for immediate safety/habitability concerns
+                Use &quot;Emergency&quot; only for immediate safety/habitability concerns
               </p>
             </div>
           </div>
