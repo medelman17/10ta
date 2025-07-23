@@ -21,6 +21,14 @@ export async function analyzeIssuePhoto(imageUrl: string): Promise<IssueAnalysis
   const { object } = await generateObject({
     model: anthropic('claude-3-5-sonnet-20241022'),
     schema: IssueAnalysisSchema,
+    experimental_telemetry: {
+      isEnabled: true,
+      functionId: 'analyze-issue-photo',
+      metadata: {
+        purpose: 'tenant-issue-analysis',
+        feature: 'issue-reporting',
+      },
+    },
     messages: [
       {
         role: 'user',
