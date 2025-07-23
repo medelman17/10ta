@@ -31,7 +31,10 @@ import {
   FileText,
   Building,
   CalendarIcon,
-  Loader2
+  Loader2,
+  Upload,
+  X,
+  Paperclip
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -76,6 +79,7 @@ export default function SimpleCommunicationForm({ issueId }: CommunicationFormPr
   const [contactPhone, setContactPhone] = useState("");
   const [followUpRequired, setFollowUpRequired] = useState(false);
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
+  const [files, setFiles] = useState<File[]>([]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -87,24 +91,32 @@ export default function SimpleCommunicationForm({ issueId }: CommunicationFormPr
 
     setLoading(true);
     try {
+      const formData = new FormData();
+      formData.append("type", type);
+      formData.append("direction", direction);
+      formData.append("communicationDate", communicationDate.toISOString());
+      formData.append("subject", subject);
+      formData.append("content", content);
+      formData.append("contactName", contactName);
+      formData.append("contactRole", contactRole);
+      formData.append("contactEmail", contactEmail);
+      formData.append("contactPhone", contactPhone);
+      formData.append("followUpRequired", String(followUpRequired));
+      if (followUpDate) {
+        formData.append("followUpDate", followUpDate.toISOString());
+      }
+      if (issueId) {
+        formData.append("issueId", issueId);
+      }
+      
+      // Add files
+      files.forEach(file => {
+        formData.append("files", file);
+      });
+      
       const response = await fetch("/api/communications", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type,
-          direction,
-          communicationDate,
-          subject,
-          content,
-          contactName,
-          contactRole,
-          contactEmail,
-          contactPhone,
-          participants: [],
-          followUpRequired,
-          followUpDate,
-          issueId,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -119,6 +131,15 @@ export default function SimpleCommunicationForm({ issueId }: CommunicationFormPr
       setLoading(false);
     }
   }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    setFiles(prev => [...prev, ...selectedFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -333,6 +354,60 @@ export default function SimpleCommunicationForm({ issueId }: CommunicationFormPr
                 </Popover>
               </div>
             )}
+          </div>
+
+          {/* File Attachments */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium">Attachments</h3>
+            <div className="space-y-2">
+              <Label htmlFor="file-upload" className="cursor-pointer">
+                <div className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
+                  <div className="flex flex-col items-center space-y-2">
+                    <Upload className="w-8 h-8 text-gray-400" />
+                    <span className="text-sm text-gray-600">
+                      Drop files here or click to upload
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Images, PDFs, and documents up to 10MB each
+                    </span>
+                  </div>
+                </div>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  className="hidden"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                  onChange={handleFileChange}
+                />
+              </Label>
+              
+              {files.length > 0 && (
+                <div className="space-y-2 mt-4">
+                  {files.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                      <div className="flex items-center space-x-2">
+                        <Paperclip className="h-4 w-4" />
+                        <span className="text-sm truncate max-w-xs">
+                          {file.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFile(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

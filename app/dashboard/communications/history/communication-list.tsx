@@ -55,6 +55,8 @@ interface Communication {
     id: string;
     url: string;
     fileName: string;
+    type: string;
+    mimeType: string;
   }>;
 }
 
@@ -298,9 +300,25 @@ export default function CommunicationList() {
                         )}
                         
                         {comm.media.length > 0 && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <FileText className="h-4 w-4" />
-                            <span>{comm.media.length} attachment{comm.media.length > 1 ? 's' : ''}</span>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <FileText className="h-4 w-4" />
+                              <span>{comm.media.length} attachment{comm.media.length > 1 ? 's' : ''}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {comm.media.map((file) => (
+                                <a
+                                  key={file.id}
+                                  href={file.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-muted rounded-md hover:bg-muted/80 transition-colors"
+                                >
+                                  <FileText className="h-3 w-3" />
+                                  <span className="truncate max-w-[100px]">{file.fileName}</span>
+                                </a>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
