@@ -83,16 +83,15 @@ export const isBuildingAdmin = cache(async (
   userId: string,
   buildingId: string
 ): Promise<boolean> => {
-  const role = await prisma.buildingRole.findUnique({
+  const role = await prisma.buildingRole.findFirst({
     where: {
-      userId_buildingId: {
-        userId,
-        buildingId,
-      },
+      userId,
+      buildingId,
+      role: 'BUILDING_ADMIN',
     },
   });
 
-  return role?.role === 'BUILDING_ADMIN';
+  return !!role;
 });
 
 // Get current user's permissions for a building
