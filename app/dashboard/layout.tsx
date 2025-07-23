@@ -8,6 +8,7 @@ import {
 import { getCurrentUser } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Role } from "@prisma/client"
+import { UserMenu } from "@/components/dashboard/user-menu"
 
 export default async function DashboardLayout({
   children,
@@ -36,8 +37,11 @@ export default async function DashboardLayout({
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
-          <div className="flex flex-1 items-center gap-2">
-            {/* Breadcrumb will go here */}
+          <div className="flex flex-1 items-center justify-between gap-2">
+            <div>
+              {/* Breadcrumb will go here */}
+            </div>
+            <UserMenu user={user} />
           </div>
         </header>
         <main className="flex-1">

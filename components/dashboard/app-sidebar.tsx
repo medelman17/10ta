@@ -12,7 +12,10 @@ import {
   Calendar,
   HelpCircle,
   Shield,
+  LogOut,
 } from "lucide-react"
+import { useClerk } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
 
 import {
   Sidebar,
@@ -151,10 +154,17 @@ interface AppSidebarProps extends React.ComponentPropsWithoutRef<typeof Sidebar>
 }
 
 export function AppSidebar({ user, isAdmin, ...props }: AppSidebarProps) {
+  const { signOut } = useClerk();
+  const router = useRouter();
   const currentUnit = user?.tenancies?.[0]?.unit;
   const userName = user?.firstName && user?.lastName 
     ? `${user.firstName} ${user.lastName}` 
     : user?.email || "User";
+  
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/");
+  };
     
   return (
     <Sidebar variant="inset" {...props}>
@@ -270,6 +280,12 @@ export function AppSidebar({ user, isAdmin, ...props }: AppSidebarProps) {
                   </span>
                 </div>
               </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleSignOut} className="text-red-600">
+              <LogOut className="h-4 w-4" />
+              <span>Log out</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
