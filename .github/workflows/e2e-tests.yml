@@ -50,7 +50,7 @@ jobs:
         run: pnpm install
 
       - name: Install E2E dependencies
-        run: pnpm add -D @browserbase/stagehand playwright jest @types/jest ts-jest
+        run: pnpm add -D @browserbasehq/stagehand playwright jest @types/jest ts-jest
 
       - name: Generate Prisma Client
         run: pnpm prisma generate
