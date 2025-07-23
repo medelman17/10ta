@@ -61,11 +61,13 @@ jobs:
       - name: Setup test database
         run: pnpm prisma db push
 
-      - name: Verify Vercel deployment is accessible
+      - name: Verify deployment is accessible
         run: |
-          echo "Testing Vercel deployment..."
-          curl -f https://10ta.vercel.app || exit 1
-          echo "Vercel deployment is ready!"
+          echo "Testing deployment..."
+          TEST_URL="${{ secrets.TEST_URL || 'https://10ocean.org' }}"
+          echo "Using TEST_URL: $TEST_URL"
+          curl -f "$TEST_URL" || exit 1
+          echo "Deployment is ready!"
 
       - name: Create test users
         run: pnpm test-users:create
@@ -78,7 +80,7 @@ jobs:
         run: pnpm test:e2e
         env:
           CI: true
-          TEST_URL: https://10ta.vercel.app
+          TEST_URL: ${{ secrets.TEST_URL || 'https://10ocean.org' }}
 
       - name: Upload test results
         if: failure()

@@ -11,8 +11,8 @@ export const testConfig = {
 // Test URLs
 export const TEST_URLS = {
   local: 'http://localhost:3000',
-  staging: process.env.STAGING_URL || 'https://10ta-staging.vercel.app',
-  production: 'https://10ocean.app',
+  staging: process.env.STAGING_URL || 'https://10ocean-staging.vercel.app',
+  production: 'https://10ocean.org',
 };
 
 export const getTestUrl = () => {
