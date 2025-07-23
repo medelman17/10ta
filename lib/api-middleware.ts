@@ -176,7 +176,7 @@ export function requireAllPermissions(...permissions: Permission[]): MiddlewareF
 // Compose multiple middleware functions
 export function compose(...middleware: MiddlewareFunction[]): (handler: ApiHandler) => ApiHandler {
   return (handler: ApiHandler) => {
-    return middleware.reduceRight(
+    return middleware.reduceRight<ApiHandler>(
       (next, mw) => (req) => mw(req, next),
       handler
     );
@@ -189,24 +189,72 @@ export function withAuth(handler: ApiHandler): ApiHandler {
 }
 
 export function withPermission(permission: Permission, handler: ApiHandler): ApiHandler {
-  return compose(
-    requireAuth,
-    requirePermission(permission)
-  )(handler);
+  return async (req: Request) => {
+    const user = await getCurrentUser();
+    if (!user) {
+      return createErrorResponse(401, 'Authentication required');
+    }
+    
+    const buildingId = await extractBuildingId(req);
+    if (!buildingId) {
+      return createErrorResponse(400, 'Building context required');
+    }
+    
+    const hasAccess = await hasPermission(user.id, buildingId, permission);
+    if (!hasAccess) {
+      return createErrorResponse(403, 'Insufficient permissions', {
+        required: permission,
+      });
+    }
+    
+    return handler(req);
+  };
 }
 
 export function withAnyPermission(permissions: Permission[], handler: ApiHandler): ApiHandler {
-  return compose(
-    requireAuth,
-    requireAnyPermission(...permissions)
-  )(handler);
+  return async (req: Request) => {
+    const user = await getCurrentUser();
+    if (!user) {
+      return createErrorResponse(401, 'Authentication required');
+    }
+    
+    const buildingId = await extractBuildingId(req);
+    if (!buildingId) {
+      return createErrorResponse(400, 'Building context required');
+    }
+    
+    const hasAccess = await hasAnyPermission(user.id, buildingId, permissions);
+    if (!hasAccess) {
+      return createErrorResponse(403, 'Insufficient permissions', {
+        required: permissions,
+      });
+    }
+    
+    return handler(req);
+  };
 }
 
 export function withAllPermissions(permissions: Permission[], handler: ApiHandler): ApiHandler {
-  return compose(
-    requireAuth,
-    requireAllPermissions(...permissions)
-  )(handler);
+  return async (req: Request) => {
+    const user = await getCurrentUser();
+    if (!user) {
+      return createErrorResponse(401, 'Authentication required');
+    }
+    
+    const buildingId = await extractBuildingId(req);
+    if (!buildingId) {
+      return createErrorResponse(400, 'Building context required');
+    }
+    
+    const hasAccess = await hasAllPermissions(user.id, buildingId, permissions);
+    if (!hasAccess) {
+      return createErrorResponse(403, 'Insufficient permissions', {
+        required: permissions,
+      });
+    }
+    
+    return handler(req);
+  };
 }
 
 // Log permission denials for auditing
