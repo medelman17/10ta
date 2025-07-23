@@ -2,7 +2,7 @@ name: E2E Tests (Simple) - DISABLED
 
 # Temporarily disabled due to Browserbase issues
 on:
-  # workflow_dispatch:
+  workflow_dispatch:
   # pull_request:
   #   types: [opened, synchronize]
 
