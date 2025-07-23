@@ -284,20 +284,32 @@ model Communication {
   issueId String?
   userId  String
 
-  type      CommunicationType
-  direction CommunicationDirection
-  subject   String?
-  content   String                 @db.Text
+  type          CommunicationType
+  direction     CommunicationDirection
+  communicationDate DateTime @default(now())
+  subject       String?
+  content       String    @db.Text
 
   // Response tracking
   responseReceived Boolean   @default(false)
   responseDate     DateTime?
   responseContent  String?   @db.Text
 
-  // Metadata
-  contactName  String?
-  contactEmail String?
-  contactPhone String?
+  // Follow-up tracking
+  followUpRequired Boolean   @default(false)
+  followUpDate     DateTime?
+  followUpCompleted Boolean  @default(false)
+  
+  // Participants and metadata
+  participants  String[] // Array of participant names/roles
+  contactName   String?
+  contactEmail  String?
+  contactPhone  String?
+  contactRole   String? // e.g., "Landlord", "Property Manager", "Superintendent"
+  
+  // Resolution
+  resolved      Boolean @default(false)
+  resolution    String? @db.Text
 
   // Relationships
   issue Issue?  @relation(fields: [issueId], references: [id])
@@ -311,6 +323,8 @@ model Communication {
   @@index([userId])
   @@index([type])
   @@index([createdAt])
+  @@index([communicationDate])
+  @@index([followUpRequired])
 }
 
 enum CommunicationType {

@@ -1,0 +1,356 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { 
+  Phone, 
+  Mail, 
+  MessageSquare, 
+  User, 
+  FileText,
+  Building,
+  CalendarIcon,
+  Loader2
+} from "lucide-react";
+import { format } from "date-fns";
+
+interface CommunicationFormProps {
+  userId: string;
+  unitId?: string;
+  issueId?: string;
+}
+
+const communicationTypes = [
+  { value: "PHONE_CALL", label: "Phone Call", icon: Phone },
+  { value: "EMAIL", label: "Email", icon: Mail },
+  { value: "TEXT_MESSAGE", label: "Text Message", icon: MessageSquare },
+  { value: "IN_PERSON", label: "In Person", icon: User },
+  { value: "WRITTEN_LETTER", label: "Written Letter", icon: FileText },
+  { value: "PORTAL_MESSAGE", label: "Portal Message", icon: Building },
+];
+
+const contactRoles = [
+  "Landlord",
+  "Property Manager",
+  "Superintendent",
+  "Maintenance Staff",
+  "Management Company",
+  "Legal Representative",
+  "Other"
+];
+
+export default function SimpleCommunicationForm({ issueId }: CommunicationFormProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  
+  // Form state
+  const [type, setType] = useState("EMAIL");
+  const [direction, setDirection] = useState("SENT");
+  const [communicationDate, setCommunicationDate] = useState<Date>(new Date());
+  const [subject, setSubject] = useState("");
+  const [content, setContent] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactRole, setContactRole] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [followUpRequired, setFollowUpRequired] = useState(false);
+  const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    
+    if (!content || content.length < 10) {
+      toast.error("Please provide more details about this communication");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch("/api/communications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          direction,
+          communicationDate,
+          subject,
+          content,
+          contactName,
+          contactRole,
+          contactEmail,
+          contactPhone,
+          participants: [],
+          followUpRequired,
+          followUpDate,
+          issueId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to log communication");
+      }
+
+      toast.success("Communication logged successfully");
+      router.push("/dashboard/communications/history");
+    } catch {
+      toast.error("Failed to log communication. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Quick Type Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Communication Type</CardTitle>
+          <CardDescription>
+            Select how this communication took place
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {communicationTypes.map((commType) => {
+              const Icon = commType.icon;
+              const isSelected = type === commType.value;
+              return (
+                <Button
+                  key={commType.value}
+                  type="button"
+                  variant={isSelected ? "default" : "outline"}
+                  className="h-24 flex flex-col items-center justify-center gap-2"
+                  onClick={() => setType(commType.value)}
+                >
+                  <Icon className="h-6 w-6" />
+                  <span className="text-sm">{commType.label}</span>
+                </Button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Main Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Communication Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Direction */}
+          <div className="space-y-2">
+            <Label htmlFor="direction">Direction</Label>
+            <Select value={direction} onValueChange={setDirection}>
+              <SelectTrigger id="direction">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SENT">Sent (You → Landlord)</SelectItem>
+                <SelectItem value="RECEIVED">Received (Landlord → You)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Date */}
+          <div className="space-y-2">
+            <Label>Date & Time</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !communicationDate && "text-muted-foreground"
+                  )}
+                >
+                  {communicationDate ? (
+                    format(communicationDate, "PPP 'at' p")
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={communicationDate}
+                  onSelect={(date) => date && setCommunicationDate(date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Subject */}
+          <div className="space-y-2">
+            <Label htmlFor="subject">Subject</Label>
+            <Input
+              id="subject"
+              placeholder="Brief summary of the communication"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            />
+          </div>
+
+          {/* Content */}
+          <div className="space-y-2">
+            <Label htmlFor="content">Details *</Label>
+            <Textarea
+              id="content"
+              placeholder="Describe what was discussed, any commitments made, important details..."
+              className="min-h-[150px]"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              required
+            />
+            <p className="text-sm text-muted-foreground">
+              Be as detailed as possible. This record may be important later.
+            </p>
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium">Contact Information</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="contactName">Contact Name</Label>
+              <Input
+                id="contactName"
+                placeholder="Who did you communicate with?"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contactRole">Contact Role</Label>
+              <Select value={contactRole} onValueChange={setContactRole}>
+                <SelectTrigger id="contactRole">
+                  <SelectValue placeholder="Select their role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {contactRoles.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {role}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(type === "EMAIL" || type === "PORTAL_MESSAGE") && (
+              <div className="space-y-2">
+                <Label htmlFor="contactEmail">Contact Email</Label>
+                <Input
+                  id="contactEmail"
+                  type="email"
+                  placeholder="their.email@example.com"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                />
+              </div>
+            )}
+
+            {(type === "PHONE_CALL" || type === "TEXT_MESSAGE") && (
+              <div className="space-y-2">
+                <Label htmlFor="contactPhone">Contact Phone</Label>
+                <Input
+                  id="contactPhone"
+                  placeholder="(555) 123-4567"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Follow-up */}
+          <div className="space-y-4">
+            <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label className="text-base">Follow-up Required</Label>
+                <div className="text-sm text-muted-foreground">
+                  Do you need to follow up on this communication?
+                </div>
+              </div>
+              <Switch
+                checked={followUpRequired}
+                onCheckedChange={setFollowUpRequired}
+              />
+            </div>
+
+            {followUpRequired && (
+              <div className="space-y-2">
+                <Label>Follow-up Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !followUpDate && "text-muted-foreground"
+                      )}
+                    >
+                      {followUpDate ? (
+                        format(followUpDate, "PPP")
+                      ) : (
+                        <span>Pick a follow-up date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={followUpDate}
+                      onSelect={setFollowUpDate}
+                      initialFocus
+                      disabled={(date) => date < new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          disabled={loading}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Log Communication
+        </Button>
+      </div>
+    </form>
+  );
+}
