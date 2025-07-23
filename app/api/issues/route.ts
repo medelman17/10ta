@@ -56,6 +56,13 @@ export async function GET(req: Request) {
           reporterId: user.id,
         },
         include: {
+          reporter: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
           unit: {
             select: {
               unitNumber: true,
