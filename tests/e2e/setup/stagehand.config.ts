@@ -1,21 +1,16 @@
-import { StagehandConfig } from '@browserbase/stagehand';
+import { StagehandConfig } from '@browserbasehq/stagehand';
 
 // StageHand configuration for E2E tests
 export const testConfig: StagehandConfig = {
-  env: process.env.CI ? 'BROWSERBASE' : 'LOCAL',
-  headless: process.env.CI ? true : false,
-  verbose: process.env.DEBUG === 'true',
-  debugDom: process.env.DEBUG === 'true',
+  env: 'LOCAL', // Use local browser for now
+  headless: false,
   modelName: process.env.STAGEHAND_MODEL || 'gpt-4o',
   modelApiKey: process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY,
-  // Browserbase config for CI
-  apiKey: process.env.BROWSERBASE_API_KEY,
-  projectId: process.env.BROWSERBASE_PROJECT_ID,
 };
 
 // Test URLs
 export const TEST_URLS = {
-  local: 'http://localhost:3001',
+  local: 'http://localhost:3000',
   staging: process.env.STAGING_URL || 'https://10ta-staging.vercel.app',
   production: 'https://10ocean.app',
 };

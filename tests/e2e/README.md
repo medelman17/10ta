@@ -6,7 +6,7 @@ This directory contains end-to-end tests for 10 Ocean using StageHand, an AI-pow
 
 1. **Install Dependencies**
    ```bash
-   pnpm add -D @browserbase/stagehand playwright jest @types/jest ts-jest
+   pnpm add -D @browserbasehq/stagehand playwright jest @types/jest ts-jest
    ```
 
 2. **Set Environment Variables**

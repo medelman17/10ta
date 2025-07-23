@@ -1,4 +1,4 @@
-import { Stagehand } from '@browserbase/stagehand';
+import { Stagehand } from '@browserbasehq/stagehand';
 import { z } from 'zod';
 import { testConfig, TEST_USERS, commonActions, getTestUrl } from './setup/stagehand.config';
 
@@ -16,7 +16,13 @@ describe('10 Ocean Permission Tests', () => {
   });
 
   afterEach(async () => {
-    await stagehand.close();
+    if (stagehand) {
+      try {
+        await stagehand.close();
+      } catch (error) {
+        // Ignore close errors
+      }
+    }
   });
 
   describe('Issue Visibility Permissions', () => {
@@ -231,7 +237,13 @@ describe('Permission Edge Cases', () => {
   });
 
   afterEach(async () => {
-    await stagehand.close();
+    if (stagehand) {
+      try {
+        await stagehand.close();
+      } catch (error) {
+        // Ignore close errors
+      }
+    }
   });
 
   test('expired permissions are properly handled', async () => {
