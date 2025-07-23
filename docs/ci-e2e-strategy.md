@@ -229,7 +229,7 @@ strategy:
 
 ### 1. Test Artifacts
 ```yaml
-- uses: actions/upload-artifact@v3
+- uses: actions/upload-artifact@v4
   if: failure()
   with:
     name: test-results
