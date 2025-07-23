@@ -25,6 +25,7 @@ This document tracks all deferred work items for future implementation.
   - More reliable than local browsers in CI
   - Better debugging with session recordings
   - Optimized for CI/CD environments
+  - See comprehensive guide: `docs/browserbase-e2e-testing-in-gh-actions.md`
   
 - **Implement parallel test execution** (Todo #90)
   - Use GitHub Actions matrix strategy

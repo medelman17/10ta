@@ -105,6 +105,7 @@ env:
    - More reliable than local browsers
    - Built for CI/CD environments
    - Better debugging with recordings
+   - See detailed implementation guide: `browserbase-e2e-testing-in-gh-actions.md`
 
 2. **Optimized Local Browsers**
    - Use specific Chrome/Chromium versions
