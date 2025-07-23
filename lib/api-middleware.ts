@@ -67,7 +67,7 @@ export async function extractBuildingId(req: Request): Promise<string | null> {
 export function createErrorResponse(
   status: number,
   message: string,
-  details?: { required?: Permission | Permission[]; [key: string]: any }
+  details?: { required?: Permission | Permission[]; [key: string]: unknown }
 ): NextResponse {
   return NextResponse.json(
     {

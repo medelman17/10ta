@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -178,7 +179,7 @@ export default function IssueList({ scope }: IssueListProps) {
             </p>
             {issues.length === 0 && scope === 'my' && (
               <Button className="mt-4" asChild>
-                <a href="/dashboard/issues/new">Report Your First Issue</a>
+                <Link href="/dashboard/issues/new">Report Your First Issue</Link>
               </Button>
             )}
           </CardContent>
