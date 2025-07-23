@@ -12,7 +12,8 @@ export default async function NewIssuePage() {
   // Get user's current unit and building
   const currentTenancy = user.tenancies.find(t => t.isCurrent);
   
-  if (!currentTenancy) {
+  // If user has no tenancy but has building roles (admin), they should still be able to report issues
+  if (!currentTenancy && user.buildingRoles.length === 0) {
     redirect("/onboarding");
   }
 
@@ -21,7 +22,7 @@ export default async function NewIssuePage() {
       <div className="max-w-2xl mx-auto">
         <IssueReportForm 
           user={user}
-          currentTenancy={currentTenancy}
+          currentTenancy={currentTenancy || null}
         />
       </div>
     </div>

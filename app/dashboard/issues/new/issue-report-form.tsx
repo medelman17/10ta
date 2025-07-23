@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ interface IssueReportFormProps {
         name: string;
       };
     };
-  };
+  } | null;
 }
 
 interface PhotoAnalysis {
@@ -49,7 +49,7 @@ interface PhotoAnalysis {
   confidence: number;
 }
 
-export default function IssueReportForm({ currentTenancy }: IssueReportFormProps) {
+export default function IssueReportForm({ user, currentTenancy }: IssueReportFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -63,7 +63,39 @@ export default function IssueReportForm({ currentTenancy }: IssueReportFormProps
     severity: "",
     location: "",
     isPublic: false,
+    unitId: currentTenancy?.unitId || "",
+    buildingId: currentTenancy?.unit.buildingId || user.buildingRoles[0]?.buildingId || "",
   });
+  
+  // For admin users without tenancy, we need to fetch available units
+  const [availableUnits, setAvailableUnits] = useState<Array<{
+    id: string;
+    unitNumber: string;
+    buildingId: string;
+  }>>([]);
+  const [isLoadingUnits, setIsLoadingUnits] = useState(false);
+
+  // Fetch available units if user is admin without tenancy
+  useEffect(() => {
+    if (!currentTenancy && user.buildingRoles.length > 0) {
+      setIsLoadingUnits(true);
+      // Fetch units for the first building the user has access to
+      const buildingId = user.buildingRoles[0].buildingId;
+      fetch(`/api/admin/units?buildingId=${buildingId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.units) {
+            setAvailableUnits(data.units);
+          }
+        })
+        .catch(error => {
+          console.error('Failed to fetch units:', error);
+        })
+        .finally(() => {
+          setIsLoadingUnits(false);
+        });
+    }
+  }, [currentTenancy, user.buildingRoles]);
 
   const categories = [
     "plumbing",
@@ -149,7 +181,7 @@ export default function IssueReportForm({ currentTenancy }: IssueReportFormProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.description || !formData.category || !formData.severity) {
+    if (!formData.title || !formData.description || !formData.category || !formData.severity || !formData.unitId || !formData.buildingId) {
       alert("Please fill in all required fields");
       return;
     }
@@ -164,8 +196,8 @@ export default function IssueReportForm({ currentTenancy }: IssueReportFormProps
       form.append("severity", formData.severity);
       form.append("location", formData.location || "other");
       form.append("isPublic", formData.isPublic.toString());
-      form.append("unitId", currentTenancy.unitId);
-      form.append("buildingId", currentTenancy.unit.buildingId);
+      form.append("unitId", formData.unitId);
+      form.append("buildingId", formData.buildingId);
       
       // Add photos
       photos.forEach(photo => {
@@ -357,11 +389,30 @@ export default function IssueReportForm({ currentTenancy }: IssueReportFormProps
             </div>
 
             <div className="space-y-2">
-              <Label>Unit</Label>
-              <Input 
-                value={`${currentTenancy.unit.unitNumber} - ${currentTenancy.unit.building.name}`} 
-                disabled 
-              />
+              <Label htmlFor="unit">Unit {!currentTenancy && "*"}</Label>
+              {currentTenancy ? (
+                <Input 
+                  value={`${currentTenancy.unit.unitNumber} - ${currentTenancy.unit.building.name}`} 
+                  disabled 
+                />
+              ) : (
+                <Select 
+                  value={formData.unitId} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, unitId: value }))}
+                  disabled={isLoadingUnits}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingUnits ? "Loading units..." : "Select unit"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableUnits.map((unit) => (
+                      <SelectItem key={unit.id} value={unit.id}>
+                        {unit.unitNumber}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 
