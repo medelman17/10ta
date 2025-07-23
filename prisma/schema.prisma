@@ -32,6 +32,8 @@ model Building {
   meetings     Meeting[]
   unitRequests UnitRequest[]
   communicationTemplates CommunicationTemplate[]
+  documents    Document[]
+  documentFolders DocumentFolder[]
 
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -94,6 +96,9 @@ model User {
   
   // Communication templates
   createdTemplates   CommunicationTemplate[]
+  
+  // Documents
+  uploadedDocuments  Document[]
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -138,6 +143,9 @@ model Tenancy {
 
   user User @relation(fields: [userId], references: [id])
   unit Unit @relation(fields: [unitId], references: [id])
+  
+  // Documents specific to this tenancy
+  documents Document[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -217,6 +225,7 @@ model Issue {
   media          Media[]
   communications Communication[]
   comments       Comment[]
+  documents      IssueDocument[]
   relatedIssues  IssueRelation[] @relation("FromIssue")
   relatedTo      IssueRelation[] @relation("ToIssue")
 
@@ -324,6 +333,7 @@ model Communication {
   issue Issue?  @relation(fields: [issueId], references: [id])
   user  User    @relation(fields: [userId], references: [id])
   media Media[]
+  documents CommunicationDocument[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -577,6 +587,117 @@ model AuditLog {
 }
 
 // ========================================
+// LIBRARY & DOCUMENTS
+// ========================================
+
+model Document {
+  id          String   @id @default(cuid())
+  buildingId  String
+  uploadedBy  String
+  
+  // Document metadata
+  title       String
+  description String?
+  category    DocumentCategory
+  visibility  DocumentVisibility
+  
+  // File information
+  fileUrl     String   // Vercel Blob URL
+  fileName    String
+  fileType    String   // MIME type
+  fileSize    Int      // bytes
+  
+  // Organization
+  tags        String[]
+  folderId    String?
+  
+  // For tenant-specific documents
+  tenancyId   String?  // If TENANT_ONLY visibility
+  
+  // Versioning
+  version     Int      @default(1)
+  previousVersionId String?
+  
+  // Metadata
+  downloadCount Int    @default(0)
+  lastAccessedAt DateTime?
+  expiresAt    DateTime?
+  isActive    Boolean @default(true)
+  
+  // Relations
+  building    Building @relation(fields: [buildingId], references: [id])
+  uploader    User     @relation(fields: [uploadedBy], references: [id])
+  folder      DocumentFolder? @relation(fields: [folderId], references: [id])
+  tenancy     Tenancy? @relation(fields: [tenancyId], references: [id])
+  previousVersion Document? @relation("DocumentVersions", fields: [previousVersionId], references: [id])
+  nextVersions    Document[] @relation("DocumentVersions")
+  
+  // Many-to-many relations
+  relatedIssues        IssueDocument[]
+  relatedCommunications CommunicationDocument[]
+  
+  // Audit fields
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([buildingId])
+  @@index([visibility])
+  @@index([category])
+  @@index([tenancyId])
+  @@index([uploadedBy])
+}
+
+model DocumentFolder {
+  id          String   @id @default(cuid())
+  buildingId  String
+  name        String
+  description String?
+  parentId    String?
+  visibility  DocumentVisibility
+  
+  // Relations
+  building    Building @relation(fields: [buildingId], references: [id])
+  parent      DocumentFolder? @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children    DocumentFolder[] @relation("FolderHierarchy")
+  documents   Document[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([buildingId])
+  @@index([parentId])
+}
+
+// Junction tables for document relationships
+model IssueDocument {
+  issueId    String
+  documentId String
+  addedBy    String
+  addedAt    DateTime @default(now())
+  
+  issue      Issue    @relation(fields: [issueId], references: [id])
+  document   Document @relation(fields: [documentId], references: [id])
+  
+  @@id([issueId, documentId])
+  @@index([issueId])
+  @@index([documentId])
+}
+
+model CommunicationDocument {
+  communicationId String
+  documentId      String
+  addedBy         String
+  addedAt         DateTime @default(now())
+  
+  communication   Communication @relation(fields: [communicationId], references: [id])
+  document        Document      @relation(fields: [documentId], references: [id])
+  
+  @@id([communicationId, documentId])
+  @@index([communicationId])
+  @@index([documentId])
+}
+
+// ========================================
 // ADMIN & PERMISSIONS
 // ========================================
 
@@ -617,4 +738,66 @@ model PermissionAuditLog {
   @@index([userId, buildingId])
   @@index([performedBy])
   @@index([createdAt])
+}
+
+// ========================================
+// ENUMS
+// ========================================
+
+enum DocumentCategory {
+  // Personal Records
+  LEASE_AGREEMENT
+  RENT_RECEIPTS
+  INSURANCE_DOCS
+  MOVE_IN_INSPECTION
+  PERSONAL_CORRESPONDENCE
+  
+  // Issue Evidence
+  REPAIR_PHOTOS
+  DAMAGE_DOCUMENTATION
+  INSPECTION_REPORTS
+  WORK_ORDERS
+  CONTRACTOR_ESTIMATES
+  
+  // Communication Records
+  EMAIL_CORRESPONDENCE
+  WRITTEN_NOTICES
+  TEXT_SCREENSHOTS
+  VOICEMAIL_TRANSCRIPTS
+  
+  // Legal Documentation
+  LEGAL_NOTICES
+  COURT_DOCUMENTS
+  TENANT_RIGHTS
+  COMPLAINTS_FILED
+  
+  // Building Information
+  BUILDING_RULES
+  FLOOR_PLANS
+  EMERGENCY_INFO
+  AMENITY_GUIDES
+  
+  // Financial Records
+  UTILITY_BILLS
+  PAYMENT_HISTORY
+  DEPOSIT_RECORDS
+  FEE_NOTICES
+  
+  // Meeting Records
+  MEETING_MINUTES
+  MEETING_AGENDAS
+  PETITIONS
+  
+  // Resources
+  HOW_TO_GUIDES
+  TEMPLATES
+  CHECKLISTS
+  
+  OTHER
+}
+
+enum DocumentVisibility {
+  PUBLIC
+  BUILDING_TENANTS
+  TENANT_ONLY
 }

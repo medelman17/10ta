@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Shield,
   LogOut,
+  Library,
 } from "lucide-react"
 import { useClerk } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
@@ -81,6 +82,11 @@ const data = {
           url: "/dashboard/communications/history",
         },
       ],
+    },
+    {
+      title: "Library",
+      url: "/dashboard/documents",
+      icon: Library,
     },
     {
       title: "Association",
