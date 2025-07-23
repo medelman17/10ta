@@ -1,0 +1,126 @@
+name: E2E Tests (Simple)
+
+# Start with manual trigger for testing
+on:
+  workflow_dispatch:
+  # pull_request:
+  #   types: [opened, synchronize]
+
+env:
+  # Use existing production instances for now (not ideal but works)
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  
+  # Test configuration
+  TEST_USER_PREFIX: "ci-test-${{ github.run_id }}"
+  E2E_BASE_URL: "http://localhost:3000"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm playwright install chromium
+
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+
+      # For now, we'll create a test user with a unique email
+      - name: Create unique test users
+        run: |
+          # Modify test user emails to be unique per run
+          export TEST_RUN_ID="${{ github.run_id }}"
+          node -e "
+          const fs = require('fs');
+          const config = fs.readFileSync('tests/e2e/setup/stagehand.config.ts', 'utf8');
+          const modified = config.replace(
+            /email: '(.*?)@test.com'/g, 
+            (match, p1) => \`email: '\${p1}-${process.env.TEST_RUN_ID}@test.com'\`
+          );
+          fs.writeFileSync('tests/e2e/setup/stagehand.config.ts', modified);
+          "
+
+      - name: Build application
+        run: pnpm build
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: Start application
+        run: |
+          pnpm start &
+          echo $! > .pid
+          # Wait for server to be ready
+          npx wait-on http://localhost:3000 -t 60000
+
+      - name: Create test users in Clerk
+        run: |
+          # Use modified emails
+          pnpm test-users:create
+        continue-on-error: true
+
+      - name: Seed test database
+        run: pnpm test-data:seed
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+        env:
+          CI: true
+          HEADLESS: true
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-artifacts
+          path: |
+            screenshots/
+            test-results/
+            logs/
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Clean test data
+          pnpm test-data:clean || true
+          
+          # Delete test users
+          pnpm test-users:delete || true
+          
+          # Kill the server
+          if [ -f .pid ]; then
+            kill $(cat .pid) || true
+          fi
+
+      # Optional: Comment on PR with results
+      - name: Comment test results
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ E2E tests failed. Check the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.'
+            })
