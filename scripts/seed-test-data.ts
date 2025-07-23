@@ -8,9 +8,12 @@ dotenv.config({ path: '.env' });
 const prisma = new PrismaClient();
 
 // Test data configuration
+const TEST_RUN_ID = process.env.TEST_RUN_ID || '';
+const emailSuffix = TEST_RUN_ID ? `-${TEST_RUN_ID}` : '';
+
 const TEST_BUILDING = {
-  name: 'Test Building',
-  address: '123 Test Street',
+  name: TEST_RUN_ID ? `Test Building ${TEST_RUN_ID}` : 'Test Building',
+  address: TEST_RUN_ID ? `${TEST_RUN_ID} Test Street` : '123 Test Street',
   city: 'Test City',
   state: 'TS',
   zipCode: '12345',
@@ -18,7 +21,7 @@ const TEST_BUILDING = {
 
 const TEST_USERS_DATA = [
   {
-    email: 'tenant1@test.com',
+    email: `tenant1${emailSuffix}@test.com`,
     clerkId: '', // Will be filled from Clerk
     firstName: 'Test',
     lastName: 'Tenant One',
@@ -43,7 +46,7 @@ const TEST_USERS_DATA = [
     ],
   },
   {
-    email: 'tenant2@test.com',
+    email: `tenant2${emailSuffix}@test.com`,
     clerkId: '',
     firstName: 'Test',
     lastName: 'Tenant Two',
@@ -60,7 +63,7 @@ const TEST_USERS_DATA = [
     ],
   },
   {
-    email: 'admin@test.com',
+    email: `admin${emailSuffix}@test.com`,
     clerkId: '',
     firstName: 'Test',
     lastName: 'Admin',
@@ -69,7 +72,7 @@ const TEST_USERS_DATA = [
     issues: [],
   },
   {
-    email: 'maintenance@test.com',
+    email: `maintenance${emailSuffix}@test.com`,
     clerkId: '',
     firstName: 'Test',
     lastName: 'Maintenance',

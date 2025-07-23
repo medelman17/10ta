@@ -12,27 +12,30 @@ if (!CLERK_SECRET_KEY) {
 }
 
 // Test users configuration
+const TEST_RUN_ID = process.env.TEST_RUN_ID || '';
+const emailSuffix = TEST_RUN_ID ? `-${TEST_RUN_ID}` : '';
+
 const TEST_USERS = [
   {
-    email: 'tenant1@test.com',
+    email: `tenant1${emailSuffix}@test.com`,
     firstName: 'Test',
     lastName: 'Tenant One',
     password: 'TestPassword123!',
   },
   {
-    email: 'tenant2@test.com',
+    email: `tenant2${emailSuffix}@test.com`,
     firstName: 'Test',
     lastName: 'Tenant Two',
     password: 'TestPassword123!',
   },
   {
-    email: 'admin@test.com',
+    email: `admin${emailSuffix}@test.com`,
     firstName: 'Test',
     lastName: 'Admin',
     password: 'TestPassword123!',
   },
   {
-    email: 'maintenance@test.com',
+    email: `maintenance${emailSuffix}@test.com`,
     firstName: 'Test',
     lastName: 'Maintenance',
     password: 'TestPassword123!',
