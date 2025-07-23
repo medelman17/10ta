@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Building2, MessageCircle, ArrowRight, ClipboardList, BarChart, HandshakeIcon } from "lucide-react";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
@@ -15,61 +15,50 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation Bar */}
+      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Building2 className="h-6 w-6" />
+              <span className="font-semibold text-lg">10 Ocean Tenant Association</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button asChild variant="ghost">
+                <Link href="/about">About</Link>
+              </Button>
+              <Button asChild variant="ghost">
+                <Link href="/contact">Contact</Link>
+              </Button>
+              <Button asChild variant="ghost">
+                <Link href="/blog">Blog</Link>
+              </Button>
+              <Button asChild variant="ghost">
+                <Link href="/library">Resources</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/sign-in">Sign In</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/sign-up">Join</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       <div className="container mx-auto px-6 py-12">
         {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <Building2 className="h-8 w-8" />
-            <h1 className="text-3xl font-semibold">
+        <div className="mb-12 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Building2 className="h-12 w-12" />
+            <h1 className="text-4xl font-bold">
               10 Ocean Tenant Association
             </h1>
           </div>
-          <p className="text-muted-foreground text-lg max-w-3xl">
+          <p className="text-muted-foreground text-xl max-w-3xl mx-auto">
             A unified platform for tenants to document issues, coordinate responses, and advocate for better living conditions.
           </p>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active Issues</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground mt-1">Across 8 units</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Pending Communications</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground mt-1">Awaiting response</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active Petitions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1</div>
-              <p className="text-xs text-muted-foreground mt-1">24 signatures</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Connected Tenants</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">47</div>
-              <p className="text-xs text-muted-foreground mt-1">Of 80 units</p>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Key Features */}
@@ -189,19 +178,7 @@ export default async function Home() {
               <p className="text-muted-foreground">
                 Join your neighbors in documenting issues and advocating for better living conditions at 10 Ocean.
               </p>
-              <div className="flex gap-4 justify-center pt-4">
-                <Button asChild size="lg">
-                  <Link href="/sign-in">
-                    Sign In
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link href="/sign-up">
-                    Create Account
-                  </Link>
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground pt-2">
+              <p className="text-sm text-muted-foreground">
                 Contact your building administrator for access
               </p>
             </div>

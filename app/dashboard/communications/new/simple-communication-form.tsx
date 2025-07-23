@@ -37,7 +37,7 @@ import {
   Paperclip
 } from "lucide-react";
 import { format } from "date-fns";
-import TemplateSelector from "@/components/communications/template-selector";
+// import TemplateSelector from "@/components/communications/template-selector";
 
 interface CommunicationFormProps {
   userId: string;
@@ -89,7 +89,7 @@ export default function SimpleCommunicationForm({ issueId: initialIssueId, avail
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [files, setFiles] = useState<File[]>([]);
   const [issueId, setIssueId] = useState(initialIssueId || "");
-  const [appliedTemplate, setAppliedTemplate] = useState<string>("");
+  // const [appliedTemplate, setAppliedTemplate] = useState<string>("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -151,11 +151,11 @@ export default function SimpleCommunicationForm({ issueId: initialIssueId, avail
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleTemplateApply = (templateSubject: string, templateContent: string, templateName: string) => {
-    setSubject(templateSubject);
-    setContent(templateContent);
-    setAppliedTemplate(templateName);
-  };
+  // const handleTemplateApply = (templateSubject: string, templateContent: string, templateName: string) => {
+  //   setSubject(templateSubject);
+  //   setContent(templateContent);
+  //   setAppliedTemplate(templateName);
+  // };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -191,16 +191,16 @@ export default function SimpleCommunicationForm({ issueId: initialIssueId, avail
         </Card>
       )}
 
-      {/* Template Selection */}
-      <TemplateSelector onTemplateApply={handleTemplateApply} />
+      {/* Template Selection - Temporarily Hidden */}
+      {/* <TemplateSelector onTemplateApply={handleTemplateApply} /> */}
       
-      {appliedTemplate && (
+      {/* {appliedTemplate && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
           <p className="text-sm text-green-800">
             ✓ Applied template: <strong>{appliedTemplate}</strong>
           </p>
         </div>
-      )}
+      )} */}
 
       {/* Quick Type Selection */}
       <Card>
@@ -220,11 +220,11 @@ export default function SimpleCommunicationForm({ issueId: initialIssueId, avail
                   key={commType.value}
                   type="button"
                   variant={isSelected ? "default" : "outline"}
-                  className="h-24 flex flex-col items-center justify-center gap-2"
+                  className="h-12 flex flex-col items-center justify-center gap-1"
                   onClick={() => setType(commType.value)}
                 >
-                  <Icon className="h-6 w-6" />
-                  <span className="text-sm">{commType.label}</span>
+                  <Icon className="h-4 w-4" />
+                  <span className="text-xs">{commType.label}</span>
                 </Button>
               );
             })}
