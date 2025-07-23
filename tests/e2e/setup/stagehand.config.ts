@@ -1,9 +1,11 @@
 // StageHand configuration for E2E tests
 export const testConfig = {
-  env: process.env.CI ? 'LOCAL' : 'LOCAL', // Always use local for now
+  env: process.env.CI === 'true' ? 'BROWSERBASE' : 'LOCAL', // Use Browserbase in CI
   headless: process.env.CI === 'true' || process.env.HEADLESS === 'true',
   modelName: process.env.STAGEHAND_MODEL || 'gpt-4o',
   modelApiKey: process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY,
+  apiKey: process.env.BROWSERBASE_API_KEY, // Required for Browserbase
+  projectId: process.env.BROWSERBASE_PROJECT_ID, // Required for Browserbase
 };
 
 // Test URLs

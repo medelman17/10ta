@@ -12,6 +12,9 @@ export default withSentryConfig(nextConfig, {
 org: "fortai-legal",
 project: "10ta",
 
+// Sentry auth token for source map uploads
+authToken: process.env.SENTRY_AUTH_TOKEN,
+
 // Only print logs for uploading source maps in CI
 silent: !process.env.CI,
 
