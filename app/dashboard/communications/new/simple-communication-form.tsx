@@ -37,6 +37,7 @@ import {
   Paperclip
 } from "lucide-react";
 import { format } from "date-fns";
+import TemplateSelector from "@/components/communications/template-selector";
 
 interface CommunicationFormProps {
   userId: string;
@@ -88,6 +89,7 @@ export default function SimpleCommunicationForm({ issueId: initialIssueId, avail
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [files, setFiles] = useState<File[]>([]);
   const [issueId, setIssueId] = useState(initialIssueId || "");
+  const [appliedTemplate, setAppliedTemplate] = useState<string>("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -149,6 +151,12 @@ export default function SimpleCommunicationForm({ issueId: initialIssueId, avail
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleTemplateApply = (templateSubject: string, templateContent: string, templateName: string) => {
+    setSubject(templateSubject);
+    setContent(templateContent);
+    setAppliedTemplate(templateName);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Link to Issue */}
@@ -181,6 +189,17 @@ export default function SimpleCommunicationForm({ issueId: initialIssueId, avail
             </Select>
           </CardContent>
         </Card>
+      )}
+
+      {/* Template Selection */}
+      <TemplateSelector onTemplateApply={handleTemplateApply} />
+      
+      {appliedTemplate && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+          <p className="text-sm text-green-800">
+            ✓ Applied template: <strong>{appliedTemplate}</strong>
+          </p>
+        </div>
       )}
 
       {/* Quick Type Selection */}
