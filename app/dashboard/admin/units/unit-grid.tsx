@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { 
   User, 
@@ -12,7 +11,6 @@ import {
   ChevronRight,
   Phone,
   Mail,
-  Calendar,
   FileWarning
 } from "lucide-react";
 import {
@@ -51,7 +49,7 @@ interface UnitGridProps {
   buildingId: string;
 }
 
-export default function UnitGrid({ units, buildingId }: UnitGridProps) {
+export default function UnitGrid({ units }: UnitGridProps) {
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   
   // Group units by floor

@@ -2,6 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { grantSuperuserAccess } from "@/lib/superuser";
 
 export async function POST(req: Request) {
   // Get the headers
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
     }
 
     try {
-      await prisma.user.upsert({
+      const user = await prisma.user.upsert({
         where: { clerkId: id },
         update: {
           email,
@@ -68,6 +69,9 @@ export async function POST(req: Request) {
           phone: phone_numbers[0]?.phone_number || null,
         },
       });
+      
+      // Grant superuser access if applicable
+      await grantSuperuserAccess(user.id, email);
     } catch (error) {
       console.error("Error syncing user:", error);
       return new Response("Error syncing user", { status: 500 });

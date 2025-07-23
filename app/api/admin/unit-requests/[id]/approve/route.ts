@@ -5,7 +5,7 @@ import { Role } from "@prisma/client";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -24,10 +24,11 @@ export async function POST(
     }
     
     const { adminNotes } = await req.json();
+    const { id } = await params;
     
     // Get the unit request
     const unitRequest = await prisma.unitRequest.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: true,
         requestedUnit: true,
@@ -56,7 +57,7 @@ export async function POST(
     const result = await prisma.$transaction(async (tx) => {
       // Update request status
       const updatedRequest = await tx.unitRequest.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status: "APPROVED",
           adminNotes,

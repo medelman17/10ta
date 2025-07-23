@@ -2,6 +2,7 @@ import { auth, currentUser as clerkCurrentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { grantSuperuserAccess } from "@/lib/superuser";
 
 export async function getCurrentUser() {
   const { userId } = await auth();
@@ -62,6 +63,33 @@ export async function getCurrentUser() {
             },
           },
         });
+        
+        // Grant superuser access if applicable
+        const isSuperuser = await grantSuperuserAccess(user.id, user.email);
+        
+        // If superuser, refresh user data to include new roles
+        if (isSuperuser) {
+          user = await prisma.user.findUnique({
+            where: { id: user.id },
+            include: {
+              buildingRoles: {
+                include: {
+                  building: true,
+                },
+              },
+              tenancies: {
+                where: { isCurrent: true },
+                include: {
+                  unit: {
+                    include: {
+                      building: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
       } catch (error) {
         console.error('Failed to create user from Clerk data:', error);
         return null;

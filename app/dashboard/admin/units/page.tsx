@@ -77,7 +77,7 @@ export default async function UnitsManagementPage() {
   });
   
   // Get pending unit requests
-  const pendingRequests = await prisma.unitRequest.findMany({
+  const pendingRequestsData = await prisma.unitRequest.findMany({
     where: {
       buildingId: currentBuilding.id,
       status: "PENDING",
@@ -98,6 +98,19 @@ export default async function UnitsManagementPage() {
       createdAt: 'desc',
     },
   });
+  
+  // Convert dates to strings for client component
+  const pendingRequests = pendingRequestsData.map(req => ({
+    ...req,
+    createdAt: req.createdAt.toISOString(),
+    updatedAt: req.updatedAt.toISOString(),
+    processedAt: req.processedAt?.toISOString() || null,
+    requestedUnit: req.requestedUnit ? {
+      ...req.requestedUnit,
+      createdAt: req.requestedUnit.createdAt.toISOString(),
+      updatedAt: req.requestedUnit.updatedAt.toISOString(),
+    } : null,
+  }));
   
   return (
     <div className="container mx-auto space-y-6">

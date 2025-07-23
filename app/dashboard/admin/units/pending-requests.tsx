@@ -72,7 +72,7 @@ export default function PendingRequests({ requests }: PendingRequestsProps) {
       setSelectedRequest(null);
       setAdminNotes("");
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Failed to approve request");
     } finally {
       setProcessing(false);
@@ -94,7 +94,7 @@ export default function PendingRequests({ requests }: PendingRequestsProps) {
       setSelectedRequest(null);
       setAdminNotes("");
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Failed to reject request");
     } finally {
       setProcessing(false);
