@@ -140,14 +140,14 @@ export default function IssueList({ scope }: IssueListProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="plumbing">Plumbing</SelectItem>
-            <SelectItem value="electrical">Electrical</SelectItem>
-            <SelectItem value="structural">Structural</SelectItem>
-            <SelectItem value="pest">Pest</SelectItem>
-            <SelectItem value="safety">Safety</SelectItem>
-            <SelectItem value="hvac">HVAC</SelectItem>
-            <SelectItem value="noise">Noise</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+            <SelectItem value="PLUMBING">Plumbing</SelectItem>
+            <SelectItem value="ELECTRICAL">Electrical</SelectItem>
+            <SelectItem value="STRUCTURAL">Structural</SelectItem>
+            <SelectItem value="PEST">Pest</SelectItem>
+            <SelectItem value="SAFETY">Safety</SelectItem>
+            <SelectItem value="HVAC">HVAC</SelectItem>
+            <SelectItem value="NOISE">Noise</SelectItem>
+            <SelectItem value="OTHER">Other</SelectItem>
           </SelectContent>
         </Select>
         
@@ -157,10 +157,10 @@ export default function IssueList({ scope }: IssueListProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Severities</SelectItem>
-            <SelectItem value="emergency">Emergency</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
+            <SelectItem value="EMERGENCY">Emergency</SelectItem>
+            <SelectItem value="HIGH">High</SelectItem>
+            <SelectItem value="MEDIUM">Medium</SelectItem>
+            <SelectItem value="LOW">Low</SelectItem>
           </SelectContent>
         </Select>
       </div>
