@@ -3,27 +3,57 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { CommunicationType } from "@prisma/client";
 import { put } from "@vercel/blob";
+import { withAuth, createErrorResponse } from '@/lib/api-middleware';
+import { hasPermission } from '@/lib/auth-helpers';
+import { PERMISSIONS } from '@/lib/permissions';
+import { isUserInBuilding } from '@/lib/api-access-helpers';
 
-export async function GET(req: Request) {
+export const GET = withAuth(async (req: Request) => {
   try {
     const user = await getCurrentUser();
-    
     if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return createErrorResponse(401, 'Authentication required');
     }
 
     const { searchParams } = new URL(req.url);
     const issueId = searchParams.get("issueId");
     const type = searchParams.get("type");
     const followUpRequired = searchParams.get("followUpRequired");
+    const buildingId = searchParams.get("buildingId");
+    
+    // Get building ID from user context if not provided
+    let targetBuildingId = buildingId;
+    if (!targetBuildingId) {
+      const currentTenancy = user.tenancies.find(t => t.isCurrent);
+      if (!currentTenancy) {
+        return createErrorResponse(400, 'No building association found');
+      }
+      targetBuildingId = currentTenancy.unit.buildingId;
+    }
+
+    // Verify user is in the building
+    const userInBuilding = await isUserInBuilding(user.id, targetBuildingId);
+    if (!userInBuilding) {
+      return createErrorResponse(403, 'You do not have access to this building');
+    }
+
+    // Check if user can view all communications or just their own
+    const canViewAll = await hasPermission(
+      user.id,
+      targetBuildingId,
+      PERMISSIONS.VIEW_ALL_COMMUNICATIONS
+    );
+
+    const whereClause = {
+      ...(issueId && { issueId }),
+      ...(type && { type: type as CommunicationType }),
+      ...(followUpRequired && { followUpRequired: followUpRequired === "true" }),
+      // If user can't view all, restrict to their own communications
+      ...(!canViewAll && { userId: user.id }),
+    };
     
     const communications = await prisma.communication.findMany({
-      where: {
-        userId: user.id,
-        ...(issueId && { issueId }),
-        ...(type && { type: type as CommunicationType }),
-        ...(followUpRequired && { followUpRequired: followUpRequired === "true" }),
-      },
+      where: whereClause,
       include: {
         issue: {
           select: {
@@ -41,16 +71,15 @@ export async function GET(req: Request) {
     return NextResponse.json(communications);
   } catch (error) {
     console.error("Error fetching communications:", error);
-    return new NextResponse("Internal server error", { status: 500 });
+    return createErrorResponse(500, 'Internal server error');
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = withAuth(async (req: Request) => {
   try {
     const user = await getCurrentUser();
-    
     if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return createErrorResponse(401, 'Authentication required');
     }
 
     const formData = await req.formData();
@@ -122,6 +151,6 @@ export async function POST(req: Request) {
     return NextResponse.json(communication);
   } catch (error) {
     console.error("Error creating communication:", error);
-    return new NextResponse("Internal server error", { status: 500 });
+    return createErrorResponse(500, 'Internal server error');
   }
-}
+});

@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { IssueCategory, IssueSeverity, IssueStatus } from '@prisma/client';
+import { withAuth, createErrorResponse } from '@/lib/api-middleware';
+import { hasPermission } from '@/lib/auth-helpers';
+import { PERMISSIONS } from '@/lib/permissions';
+import { isUserInBuilding } from '@/lib/api-access-helpers';
 
 interface HeatMapData {
   buildingId: string;
@@ -38,12 +42,11 @@ const SEVERITY_WEIGHTS = {
   LOW: 1,
 };
 
-export async function GET(req: Request) {
+export const GET = withAuth(async (req: Request) => {
   try {
     const user = await getCurrentUser();
-    
     if (!user) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return createErrorResponse(401, 'Authentication required');
     }
 
     const { searchParams } = new URL(req.url);
@@ -58,17 +61,26 @@ export async function GET(req: Request) {
     if (!targetBuildingId) {
       const currentTenancy = user.tenancies.find(t => t.isCurrent);
       if (!currentTenancy) {
-        return new NextResponse('No building association found', { status: 400 });
+        return createErrorResponse(400, 'No building association found');
       }
       targetBuildingId = currentTenancy.unit.buildingId;
     }
 
-    // Verify user has access to this building
-    const hasAccess = user.buildingRoles.some(br => br.buildingId === targetBuildingId) ||
-                     user.tenancies.some(t => t.unit.buildingId === targetBuildingId);
-    
-    if (!hasAccess) {
-      return new NextResponse('Access denied', { status: 403 });
+    // Verify user is in the building
+    const userInBuilding = await isUserInBuilding(user.id, targetBuildingId);
+    if (!userInBuilding) {
+      return createErrorResponse(403, 'You do not have access to this building');
+    }
+
+    // Check if user has permission to view building analytics
+    const canViewAnalytics = await hasPermission(
+      user.id,
+      targetBuildingId,
+      PERMISSIONS.VIEW_BUILDING_ANALYTICS
+    );
+
+    if (!canViewAnalytics) {
+      return createErrorResponse(403, 'You do not have permission to view building analytics');
     }
 
     // Calculate date filter
@@ -212,9 +224,9 @@ export async function GET(req: Request) {
     return NextResponse.json(heatMapData);
   } catch (error) {
     console.error('Heat map data error:', error);
-    return new NextResponse('Internal server error', { status: 500 });
+    return createErrorResponse(500, 'Internal server error');
   }
-}
+});
 
 function getDateFilter(timeRange: string): Date | null {
   const now = new Date();
