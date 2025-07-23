@@ -37,7 +37,35 @@ pnpm test-users:delete
 ```
 Removes all test users from Clerk.
 
-## Test Workflow
+## Automated Test Workflow
+
+### Quick Setup (Recommended)
+
+1. **Create test users in Clerk:**
+   ```bash
+   pnpm test-users:create
+   ```
+
+2. **Seed test data (auto-onboards users):**
+   ```bash
+   pnpm test-data:seed
+   ```
+
+This automatically:
+- Creates a test building with units
+- Onboards all test users
+- Assigns them to units (1A, 1B, 2A)
+- Grants appropriate permissions
+- Creates sample issues
+
+3. **Test permissions:**
+   - Sign in as different users
+   - Check `/dashboard/issues/building`
+   - Verify who can see what based on permissions
+
+### Manual Workflow (Alternative)
+
+If you prefer to manually onboard users:
 
 1. **Create test users:**
    ```bash
@@ -95,8 +123,19 @@ Removes all test users from Clerk.
 ## Cleanup
 
 When done testing:
-```bash
-pnpm test-users:delete
-```
 
-This removes test users from Clerk. Note: Database records may need manual cleanup.
+1. **Clean test data from database:**
+   ```bash
+   pnpm test-data:clean
+   ```
+
+2. **Delete test users from Clerk:**
+   ```bash
+   pnpm test-users:delete
+   ```
+
+This removes all test data including:
+- Test building and units
+- Test issues and communications
+- Permissions and audit logs
+- Test users from Clerk
