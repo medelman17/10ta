@@ -185,7 +185,7 @@ export function AppSidebar({ user, isAdmin, ...props }: AppSidebarProps) {
                   <Building2 className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">10ta</span>
+                  <span className="truncate font-semibold">10 Ocean</span>
                   <span className="truncate text-xs">Tenant Association</span>
                 </div>
               </a>

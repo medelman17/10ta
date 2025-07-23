@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "10ta - Tenant Association Platform",
+  title: "10 Ocean - Tenant Association Platform",
   description: "Document issues, coordinate responses, and advocate for better living conditions",
 };
 
