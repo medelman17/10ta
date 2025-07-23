@@ -8,13 +8,15 @@ A modern tenant association platform built to help tenants document issues, coor
 - **Document Issues**: Report and track maintenance problems with photo evidence and AI-powered categorization
 - **Log Communications**: Record all interactions with landlords and property management with professional templates
 - **Building Insights**: View building-wide issue patterns through interactive heat maps and analytics
-- **Advocacy Tools**: Access professional communication templates and tenant rights resources
-- **Collective Action**: Coordinate with neighbors and track building-wide concerns
+- **Document Library**: Organize and share tenant rights resources, legal documents, and building information
+- **Community Features**: Connect with neighbors, create petitions, and organize meetings
+- **Advocacy Tools**: Access professional communication templates and comprehensive tenant resources
 
 ## 🚀 Features
 
 ### Issue Management
 - **Smart Issue Reporting**: Upload photos with AI-powered analysis using Claude Vision API
+- **Admin Issue Creation**: Building administrators can report issues for any unit
 - **Categorization & Severity**: Automatic issue classification and severity detection
 - **Building Heat Maps**: Interactive 10x8 grid visualization showing issue distribution by unit
 - **Personal & Building Views**: Track your issues and see building-wide patterns
@@ -32,6 +34,13 @@ A modern tenant association platform built to help tenants document issues, coor
 - **Heat Map Visualization**: Color-coded building grid showing issue concentration
 - **Time Series Charts**: Track issue patterns over time
 - **Export Capabilities**: Generate reports for advocacy and legal purposes
+
+### Association & Community
+- **Petition System**: Create and sign petitions for building improvements
+- **Meeting Management**: Schedule meetings, track RSVPs, and view minutes
+- **Neighbor Directory**: Privacy-controlled neighbor discovery and messaging
+- **Community Dashboard**: Stats overview and recent association activity
+- **Privacy Controls**: Opt-in contact sharing and communication preferences
 
 ### Admin & Permissions
 - **Granular Permissions**: Role-based access control with 15+ permission types
@@ -278,6 +287,9 @@ pnpm test-data:clean       # Clean test data
 - `POST /api/communication-templates/[id]/preview` - Preview template
 - `GET /api/issues/heatmap` - Building heat map data
 - `GET /api/issues/statistics` - Analytics data
+- `GET /api/documents` - List documents with permissions
+- `POST /api/documents` - Upload document files
+- `GET /api/admin/units` - List units for admin access
 
 ### Authentication
 All API endpoints require authentication via Clerk session tokens. Role-based permissions are enforced at the API level.
@@ -296,10 +308,17 @@ All API endpoints require authentication via Clerk session tokens. Role-based pe
 - 🚧 Admin template management interface
 - 🚧 Permission inheritance and cascading
 
+### Completed ✅
+- ✅ Issue reporting with AI-powered categorization
+- ✅ Building heat maps and analytics dashboard
+- ✅ Communication logging with professional templates
+- ✅ Granular permission system
+- ✅ E2E testing with CI/CD pipeline
+- ✅ Template preview and application system
+- ✅ Document library with file management
+- ✅ Association pages (petitions, meetings, neighbors)
+
 ### Planned 📅
-- 📅 Collective petition system
-- 📅 Meeting management and minutes
-- 📅 Neighbor discovery and messaging
 - 📅 AI-powered rights assistant chatbot
 - 📅 PDF export for legal documentation
 - 📅 Mobile app with React Native
