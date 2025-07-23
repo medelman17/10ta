@@ -21,10 +21,10 @@ export default async function IssuesPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
         {/* Report New Issue */}
-        <Card>
-          <CardHeader>
+        <Card className="flex flex-col">
+          <CardHeader className="flex-1">
             <CardTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
               Report New Issue
@@ -43,8 +43,8 @@ export default async function IssuesPage() {
         </Card>
 
         {/* My Issues */}
-        <Card>
-          <CardHeader>
+        <Card className="flex flex-col">
+          <CardHeader className="flex-1">
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               My Issues
@@ -63,8 +63,8 @@ export default async function IssuesPage() {
         </Card>
 
         {/* Building Issues */}
-        <Card>
-          <CardHeader>
+        <Card className="flex flex-col">
+          <CardHeader className="flex-1">
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
               Building Issues
@@ -83,8 +83,8 @@ export default async function IssuesPage() {
         </Card>
 
         {/* Analytics */}
-        <Card>
-          <CardHeader>
+        <Card className="flex flex-col">
+          <CardHeader className="flex-1">
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
               Analytics
