@@ -1,8 +1,8 @@
-name: E2E Tests (Simple)
+name: E2E Tests (Simple) - DISABLED
 
-# Start with manual trigger for testing
+# Temporarily disabled due to Browserbase issues
 on:
-  workflow_dispatch:
+  # workflow_dispatch:
   # pull_request:
   #   types: [opened, synchronize]
 
