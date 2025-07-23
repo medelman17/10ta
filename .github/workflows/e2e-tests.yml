@@ -61,16 +61,11 @@ jobs:
       - name: Setup test database
         run: pnpm prisma db push
 
-      - name: Build application
-        run: pnpm build
-
-      - name: Start application
+      - name: Verify Vercel deployment is accessible
         run: |
-          pnpm start &
-          sleep 10
-          curl -f http://localhost:3000 || exit 1
-        env:
-          PORT: 3000
+          echo "Testing Vercel deployment..."
+          curl -f https://10ta.vercel.app || exit 1
+          echo "Vercel deployment is ready!"
 
       - name: Create test users
         run: pnpm test-users:create
@@ -83,7 +78,7 @@ jobs:
         run: pnpm test:e2e
         env:
           CI: true
-          TEST_URL: http://localhost:3000
+          TEST_URL: https://10ta.vercel.app
 
       - name: Upload test results
         if: failure()

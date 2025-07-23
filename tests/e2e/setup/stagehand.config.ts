@@ -16,6 +16,9 @@ export const TEST_URLS = {
 };
 
 export const getTestUrl = () => {
+  // Use TEST_URL env var if provided (e.g., in CI)
+  if (process.env.TEST_URL) return process.env.TEST_URL;
+  
   if (process.env.TEST_ENV === 'staging') return TEST_URLS.staging;
   if (process.env.TEST_ENV === 'production') return TEST_URLS.production;
   return TEST_URLS.local;
