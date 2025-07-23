@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { Role } from "@prisma/client";
-import { withAuth, createErrorResponse } from '@/lib/api-middleware';
+import { createErrorResponse } from '@/lib/api-middleware';
 import { hasPermission } from '@/lib/auth-helpers';
 import { PERMISSIONS } from '@/lib/permissions';
 
-export const POST = withAuth(async (
+export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
-) => {
+) {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -116,4 +116,4 @@ export const POST = withAuth(async (
       error instanceof Error ? error.message : 'Internal server error'
     );
   }
-});
+}

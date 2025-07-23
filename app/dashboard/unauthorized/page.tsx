@@ -13,15 +13,15 @@ export default function UnauthorizedPage() {
           </div>
           <CardTitle className="text-xl font-semibold">Access Denied</CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
-            You don't have permission to view this page or resource.
+            You don&apos;t have permission to view this page or resource.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-muted-foreground text-center space-y-2">
             <p>This could be because:</p>
             <ul className="text-left space-y-1 ml-4">
-              <li>• You don't have the required permissions</li>
-              <li>• Your role doesn't allow access to this feature</li>
+              <li>• You don&apos;t have the required permissions</li>
+              <li>• Your role doesn&apos;t allow access to this feature</li>
               <li>• The resource belongs to another building</li>
             </ul>
           </div>

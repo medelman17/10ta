@@ -31,6 +31,7 @@ model Building {
   petitions    Petition[]
   meetings     Meeting[]
   unitRequests UnitRequest[]
+  communicationTemplates CommunicationTemplate[]
 
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -90,6 +91,9 @@ model User {
   // Admin permissions
   permissions        AdminPermission[] @relation("UserPermissions")
   grantedPermissions AdminPermission[] @relation("GrantedPermissions")
+  
+  // Communication templates
+  createdTemplates   CommunicationTemplate[]
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -330,6 +334,51 @@ model Communication {
   @@index([createdAt])
   @@index([communicationDate])
   @@index([followUpRequired])
+}
+
+model CommunicationTemplate {
+  id          String @id @default(cuid())
+  buildingId  String?  // null means global/default template
+  name        String
+  category    TemplateCategory
+  description String?
+  
+  // Template content
+  subject     String
+  content     String @db.Text
+  
+  // Customization options
+  placeholders String[] // Array of placeholder keys like ["{UNIT_NUMBER}", "{DATE}", "{TENANT_NAME}"]
+  
+  // Metadata
+  isBuiltIn   Boolean @default(false) // System templates vs user-created
+  isActive    Boolean @default(true)
+  usageCount  Int     @default(0)
+  
+  // Relations
+  building    Building? @relation(fields: [buildingId], references: [id])
+  createdBy   String?
+  creator     User?     @relation(fields: [createdBy], references: [id])
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([buildingId])
+  @@index([category])
+  @@index([isActive])
+  @@index([isBuiltIn])
+}
+
+enum TemplateCategory {
+  MAINTENANCE
+  RENT
+  LEGAL
+  NOISE
+  SECURITY
+  GENERAL
+  FOLLOW_UP
+  ESCALATION
 }
 
 enum CommunicationType {

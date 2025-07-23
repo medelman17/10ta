@@ -12,8 +12,6 @@ export default async function BuildingIssuesPage() {
     redirect("/sign-in");
   }
 
-  const currentTenancy = user.tenancies.find(t => t.isCurrent);
-  const buildingName = currentTenancy?.unit?.building?.name || "Your Building";
 
   return (
     <div className="container mx-auto">

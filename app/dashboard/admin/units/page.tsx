@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UnitGrid from "./unit-grid";
 import PendingRequests from "./pending-requests";
-import { Building2 } from "lucide-react";
 
 export default async function UnitsManagementPage() {
   const user = await getCurrentUser();
