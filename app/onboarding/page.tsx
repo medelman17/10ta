@@ -21,16 +21,20 @@ export default async function OnboardingPage() {
   });
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Welcome to 10ta</h1>
-          <p className="mt-2 text-muted-foreground">
-            Let&apos;s get you set up with your building and unit
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4">
+      <div className="max-w-lg w-full space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight">Welcome to 10ta</h1>
+          <p className="text-lg text-muted-foreground">
+            Your tenant association platform
           </p>
         </div>
         
         <OnboardingForm buildings={buildings} userId={user.id} />
+        
+        <p className="text-center text-sm text-muted-foreground">
+          Need help? Contact your building administrator.
+        </p>
       </div>
     </div>
   );
