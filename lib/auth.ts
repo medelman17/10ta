@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser as clerkCurrentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
@@ -10,7 +10,7 @@ export async function getCurrentUser() {
     return null;
   }
 
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { clerkId: userId },
     include: {
       buildingRoles: {
@@ -30,6 +30,44 @@ export async function getCurrentUser() {
       },
     },
   });
+
+  // If user doesn't exist in database, create them from Clerk data
+  if (!user) {
+    const clerkUser = await clerkCurrentUser();
+    if (clerkUser) {
+      try {
+        user = await prisma.user.create({
+          data: {
+            clerkId: clerkUser.id,
+            email: clerkUser.emailAddresses[0]?.emailAddress || '',
+            firstName: clerkUser.firstName || null,
+            lastName: clerkUser.lastName || null,
+            phone: clerkUser.phoneNumbers[0]?.phoneNumber || null,
+          },
+          include: {
+            buildingRoles: {
+              include: {
+                building: true,
+              },
+            },
+            tenancies: {
+              where: { isCurrent: true },
+              include: {
+                unit: {
+                  include: {
+                    building: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+      } catch (error) {
+        console.error('Failed to create user from Clerk data:', error);
+        return null;
+      }
+    }
+  }
 
   return user;
 }
