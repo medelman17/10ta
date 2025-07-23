@@ -1,7 +1,5 @@
-import { StagehandConfig } from '@browserbasehq/stagehand';
-
 // StageHand configuration for E2E tests
-export const testConfig: StagehandConfig = {
+export const testConfig = {
   env: process.env.CI ? 'LOCAL' : 'LOCAL', // Always use local for now
   headless: process.env.CI === 'true' || process.env.HEADLESS === 'true',
   modelName: process.env.STAGEHAND_MODEL || 'gpt-4o',
