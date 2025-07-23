@@ -2,25 +2,18 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { Role } from "@prisma/client";
+import { withAuth, createErrorResponse } from '@/lib/api-middleware';
+import { hasPermission } from '@/lib/auth-helpers';
+import { PERMISSIONS } from '@/lib/permissions';
 
-export async function POST(
+export const POST = withAuth(async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
     const user = await getCurrentUser();
-    
     if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-    
-    // Check if user is admin
-    const isAdmin = user.buildingRoles.some(
-      (role) => role.role === Role.BUILDING_ADMIN || role.role === Role.ASSOCIATION_ADMIN
-    );
-    
-    if (!isAdmin) {
-      return new NextResponse("Forbidden", { status: 403 });
+      return createErrorResponse(401, 'Authentication required');
     }
     
     const { adminNotes } = await req.json();
@@ -42,13 +35,15 @@ export async function POST(
       return new NextResponse("Request already processed", { status: 400 });
     }
     
-    // Check if admin has access to this building
-    const hasAccess = user.buildingRoles.some(
-      (role) => role.buildingId === unitRequest.buildingId
+    // Check if user has permission to manage unit requests
+    const canManageRequests = await hasPermission(
+      user.id,
+      unitRequest.buildingId,
+      PERMISSIONS.MANAGE_UNIT_REQUESTS
     );
     
-    if (!hasAccess) {
-      return new NextResponse("No access to this building", { status: 403 });
+    if (!canManageRequests) {
+      return createErrorResponse(403, 'You do not have permission to manage unit requests');
     }
     
     // Update request status
@@ -65,6 +60,6 @@ export async function POST(
     return NextResponse.json(updatedRequest);
   } catch (error) {
     console.error("Error rejecting unit request:", error);
-    return new NextResponse("Internal server error", { status: 500 });
+    return createErrorResponse(500, 'Internal server error');
   }
-}
+});
