@@ -132,20 +132,20 @@ const data = {
   ],
   navAdmin: [
     {
-      title: "Admin Dashboard",
+      title: "Association Tools",
       url: "/dashboard/admin",
       icon: Shield,
       items: [
         {
-          title: "Manage Tenants",
+          title: "Member Directory",
           url: "/dashboard/admin/tenants",
         },
         {
-          title: "Unit Management",
+          title: "Building Overview",
           url: "/dashboard/admin/units",
         },
         {
-          title: "Access Control",
+          title: "Leadership & Access",
           url: "/dashboard/admin/access",
         },
       ],
@@ -233,7 +233,7 @@ export function AppSidebar({ user, isAdmin, ...props }: AppSidebarProps) {
         
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>Administration</SidebarGroupLabel>
+            <SidebarGroupLabel>Association Leadership</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {data.navAdmin.map((item) => (

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Building2, Users, Home, AlertCircle, Key } from "lucide-react";
+import { Building2, Users, Home, Key } from "lucide-react";
 
 export default async function AdminDashboardPage() {
   const user = await getCurrentUser();
@@ -66,7 +66,7 @@ export default async function AdminDashboardPage() {
               <div>
                 <h3 className="font-semibold">{stat.building.name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {stat.role === Role.BUILDING_ADMIN ? "Building Admin" : "Association Admin"}
+                  {stat.role === Role.BUILDING_ADMIN ? "Building Organizer" : "Association Leader"}
                 </p>
               </div>
             </div>
@@ -90,7 +90,7 @@ export default async function AdminDashboardPage() {
               href={`/dashboard/admin/buildings/${stat.building.id}`}
               className="text-sm text-blue-600 hover:underline"
             >
-              Manage Building →
+              View Building Dashboard →
             </Link>
           </div>
         ))}
@@ -103,8 +103,8 @@ export default async function AdminDashboardPage() {
         >
           <Users className="h-5 w-5 text-muted-foreground" />
           <div>
-            <h3 className="font-semibold">Manage Tenants</h3>
-            <p className="text-sm text-muted-foreground">View and manage all tenants</p>
+            <h3 className="font-semibold">Member Directory</h3>
+            <p className="text-sm text-muted-foreground">View association members</p>
           </div>
         </Link>
         
@@ -114,19 +114,8 @@ export default async function AdminDashboardPage() {
         >
           <Home className="h-5 w-5 text-muted-foreground" />
           <div>
-            <h3 className="font-semibold">Unit Management</h3>
-            <p className="text-sm text-muted-foreground">Assign tenants to units</p>
-          </div>
-        </Link>
-        
-        <Link
-          href="/dashboard/admin/issues"
-          className="flex items-center gap-3 rounded-lg border p-4 hover:bg-accent transition-colors"
-        >
-          <AlertCircle className="h-5 w-5 text-muted-foreground" />
-          <div>
-            <h3 className="font-semibold">All Issues</h3>
-            <p className="text-sm text-muted-foreground">View issues across buildings</p>
+            <h3 className="font-semibold">Building Overview</h3>
+            <p className="text-sm text-muted-foreground">View units and occupancy</p>
           </div>
         </Link>
         
@@ -136,8 +125,8 @@ export default async function AdminDashboardPage() {
         >
           <Key className="h-5 w-5 text-muted-foreground" />
           <div>
-            <h3 className="font-semibold">Access Control</h3>
-            <p className="text-sm text-muted-foreground">Manage admin permissions</p>
+            <h3 className="font-semibold">Leadership Roles</h3>
+            <p className="text-sm text-muted-foreground">Manage association leaders</p>
           </div>
         </Link>
       </div>
