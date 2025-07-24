@@ -1,6 +1,8 @@
 # 10ta - Tenant Association Platform
 
-A modern tenant association platform built to help tenants document issues, coordinate responses, and advocate for better living conditions. 10ta empowers tenants with professional tools for issue tracking, communication logging, and collective action.
+A tenant-first organizing platform built to help renters document issues, coordinate collective action, and advocate for better living conditions. 10ta empowers tenants with professional tools for issue tracking, communication logging, and community organizing.
+
+**This is NOT a property management tool** - it's a platform for tenant empowerment and collective action.
 
 ## 🏢 Overview
 
@@ -231,9 +233,10 @@ pnpm test-data:clean       # Clean test data
 ## 🔐 Permission System
 
 ### Role Hierarchy
-- **Tenant**: Basic issue reporting and communication logging
-- **Association Admin**: Building analytics, petition management, meeting coordination
-- **Building Admin**: Full access to all building data and administrative functions
+- **Tenant**: Issue reporting, communication logging, petition participation, neighbor connections
+- **Association Leader**: Elected/appointed by tenants to coordinate meetings, petitions, and advocacy
+- **Building Organizer**: Trusted tenants who help onboard neighbors and support the association
+- **External Advocate**: Legal aid or activists with read-only access to help with cases
 
 ### Key Permissions
 - `VIEW_ALL_ISSUES` - See all building issues

@@ -6,6 +6,66 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 10ta is a tenant association platform built to help tenants document issues, coordinate responses, and advocate for better living conditions. The platform uses a modern tech stack with NextJS 15+, TypeScript, Prisma, and AI-powered features.
 
+**IMPORTANT**: This is a platform for TENANT EMPOWERMENT and COLLECTIVE ACTION, not property management. Every feature should help tenants organize and advocate for their rights, not be managed from above.
+
+## User Personas
+
+Every feature we build should serve one or more of these personas:
+
+### 🏠 The Affected Tenant ("Sarah")
+**Who**: A tenant experiencing issues who needs help documenting and resolving them
+**Needs**: Document issues with evidence, see if neighbors have similar problems, learn rights, get templates, track landlord responses
+**Features**: Issue reporting, anonymous options, rights resources, communication templates, building heat maps
+
+### 🔥 The Tenant Organizer ("Marcus")  
+**Who**: Proactive tenant who coordinates with neighbors and organizes collective action
+**Needs**: Create petitions, schedule meetings, build evidence, coordinate actions, connect tenants
+**Features**: Petition tools, meeting management, analytics, neighbor messaging, campaign planning
+
+### 📋 The Association Leader ("Diana")
+**Who**: Elected/volunteer leader who interfaces with landlords, media, and legal advocates
+**Needs**: Formal communications, generate reports, track membership, coordinate with advocates
+**Features**: Association dashboard, member directory, document library, report generation, audit trails
+
+### 🆕 The New Tenant ("Alex")
+**Who**: Recently moved in, wants to understand building issues and connect safely
+**Needs**: Learn building history, connect with neighbors, find resources, join association
+**Features**: Public heat map, neighbor introductions, resource library, association onboarding
+
+### 🤝 The Supportive Neighbor ("Rita")
+**Who**: Wants to help but not lead - signs petitions, attends meetings, offers support
+**Needs**: Stay informed, support efforts, easy participation, anonymous options
+**Features**: Quick petition signing, meeting RSVP, issue verification, digest notifications
+
+### ⚖️ The External Advocate ("James")
+**Who**: Legal aid lawyer, housing activist, or volunteer helping with expertise
+**Needs**: Access building data, generate reports, provide resources, track history
+**Features**: Analytics access, export capabilities, document access, anonymous aggregation
+
+## Key Principles
+
+1. **Empowerment, not management**: Features help tenants organize and advocate, not be managed
+2. **Privacy-first**: Tenants control their information and visibility
+3. **Collective action**: Features facilitate group coordination
+4. **Documentation for advocacy**: Everything logged can build legal cases
+5. **Accessible to all**: From tech-savvy organizers to elderly neighbors
+
+## Feature Alignment
+
+✅ **Do build**: 
+- Tools for documenting and sharing issues
+- Organizing and coordination features
+- Rights education and resources
+- Collective action tools
+- Privacy-respecting communication
+
+❌ **Don't build**:
+- Top-down management tools
+- Landlord-serving features
+- Mandatory verification systems
+- Features that expose tenant data
+- Anything that could be used against tenants
+
 ## Tech Stack
 
 - **Frontend**: NextJS 15+ (App Router), TypeScript, Tailwind CSS 4, ShadCN/UI
@@ -110,10 +170,11 @@ Buildings follow a format where units are numbered by floor + line:
 - Granular privacy controls throughout
 
 ### Role-Based Access
-- **Tenants**: Can report issues, view building-wide data, participate in petitions
-- **Association Admins**: Can manage meetings, create petitions, access analytics
-- **Building Admins**: Full access to all building data and administrative functions
-- **Superusers**: Hardcoded emails in NEXT_PUBLIC_SUPER_USER_EMAILS env var
+- **Tenants**: Can report issues, view building-wide data, participate in petitions, connect with neighbors
+- **Association Leaders**: Elected/appointed by tenants to manage meetings, create petitions, access analytics, coordinate with external advocates
+- **Building Organizers**: Trusted tenants who help onboard neighbors, moderate content, and support the association
+- **External Advocates**: Read-only access to anonymized data for legal/advocacy support
+- **Superusers**: Platform maintainers (hardcoded emails in NEXT_PUBLIC_SUPER_USER_EMAILS)
 
 ### Permission System
 The platform uses a granular permission system (`/lib/permissions.ts`):
@@ -184,9 +245,19 @@ E2E tests use Jest + Playwright + Stagehand:
 - Tests create real Clerk users and clean up after
 - AI features require valid Anthropic API key
 
+## Reframing Existing Features
+
+When working with existing "admin" features, reframe them for tenant empowerment:
+
+- **"Building Admin" → "Association Leader"**: Elected by tenants, not imposed
+- **"Unit Assignment" → "Neighbor Verification"**: Tenants verify each other
+- **"Tenant Directory" → "Association Members"**: Opt-in directory
+- **"Unit Management" → "Building Visualization"**: For organizing, not managing
+- **"Tenant Profiles" → "Member Profiles"**: Self-managed, privacy-first
+
 ## Common Development Patterns
 
-### Adding a New Admin Feature
+### Adding a New Association Feature
 1. Create route in `/app/dashboard/admin/`
 2. Add permission check using `checkPermission()`
 3. Create API route with `protectedRoute` wrapper
