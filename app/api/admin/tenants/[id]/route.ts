@@ -131,6 +131,95 @@ export async function GET(
   }
 }
 
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: tenantId } = await params;
+    const user = await getCurrentUser();
+    
+    if (!user) {
+      return createErrorResponse(401, 'Authentication required');
+    }
+
+    // Only superusers can delete tenants
+    const isSuperUser = process.env.NEXT_PUBLIC_SUPER_USER_EMAILS?.split(',').includes(user.email);
+    
+    if (!isSuperUser) {
+      return createErrorResponse(403, 'Only platform administrators can delete tenants');
+    }
+
+    // Check if tenant exists
+    const tenant = await prisma.user.findUnique({
+      where: { id: tenantId },
+      include: {
+        tenancies: {
+          where: {
+            isCurrent: true
+          }
+        }
+      }
+    });
+
+    if (!tenant) {
+      return createErrorResponse(404, 'Tenant not found');
+    }
+
+    // Prevent deletion if tenant has current tenancy
+    if (tenant.tenancies.length > 0) {
+      return createErrorResponse(400, 'Cannot delete tenant with active tenancy');
+    }
+
+    // Check for open issues
+    const openIssueCount = await prisma.issue.count({
+      where: {
+        reporterId: tenantId,
+        status: {
+          in: ['OPEN', 'IN_PROGRESS']
+        }
+      }
+    });
+
+    if (openIssueCount > 0) {
+      return createErrorResponse(400, 'Cannot delete tenant with open issues');
+    }
+
+    // Delete tenant and related data
+    await prisma.$transaction(async (tx) => {
+      // Delete related data
+      await tx.issue.deleteMany({ where: { reporterId: tenantId } });
+      await tx.communication.deleteMany({ where: { userId: tenantId } });
+      await tx.tenancy.deleteMany({ where: { userId: tenantId } });
+      await tx.unitRequest.deleteMany({ where: { userId: tenantId } });
+      await tx.adminPermission.deleteMany({ where: { userId: tenantId } });
+      await tx.buildingRole.deleteMany({ where: { userId: tenantId } });
+      await tx.user.delete({ where: { id: tenantId } });
+
+      // Create audit log
+      await tx.auditLog.create({
+        data: {
+          userId: user.id,
+          action: 'DELETE',
+          entityType: 'user',
+          entityId: tenantId,
+          metadata: {
+            email: tenant.email,
+            name: `${tenant.firstName} ${tenant.lastName}`.trim()
+          }
+        }
+      });
+    });
+
+    return NextResponse.json({
+      message: 'Tenant deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting tenant:', error);
+    return createErrorResponse(500, 'Failed to delete tenant');
+  }
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
