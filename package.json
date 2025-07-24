@@ -14,6 +14,7 @@
     "test-users:list": "node scripts/manage-test-users.js list",
     "test-data:seed": "tsx scripts/seed-test-data.ts",
     "test-data:clean": "tsx scripts/clean-test-data.ts",
+    "library:seed": "tsx scripts/seed-public-documents.ts",
     "test:e2e": "jest --config jest.config.e2e.js",
     "test:e2e:watch": "jest --config jest.config.e2e.js --watch",
     "test:setup": "pnpm test-users:create && pnpm test-data:seed"
@@ -85,6 +86,7 @@
     "@types/react-dom": "^19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.2",
     "jest": "^30.0.5",
