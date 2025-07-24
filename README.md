@@ -49,6 +49,22 @@ A modern tenant association platform built to help tenants document issues, coor
 - **Audit Logging**: Track all permission changes and admin actions
 - **Multi-Role Support**: Tenant, association admin, and building admin roles
 
+### Building Management (Admin)
+- **Building Dashboard**: Comprehensive overview with occupancy rates and issue metrics
+- **Unit Grid View**: Interactive 10x8 grid showing unit status, tenants, and issues
+- **Unit Details**: Full unit history, tenant information, and issue tracking
+- **Tenant Assignment**: Modal workflow for assigning tenants to vacant units
+- **Occupancy Tracking**: Historical records of all unit tenancies
+- **Vacancy Management**: Track vacant units with duration and last activity
+
+### Tenant Management (Admin)
+- **Tenant Directory**: Searchable list with filters for status, unit, and verification
+- **Tenant Profiles**: Detailed view with contact info, unit history, and documents
+- **Bulk Operations**: Select multiple tenants for communications or exports
+- **CSV Export**: Download tenant data for external analysis
+- **Search & Filter**: Find tenants by name, email, phone, or unit number
+- **Verification Status**: Track ID verification and lease documentation
+
 ## 🛠 Tech Stack
 
 ### Frontend
@@ -279,6 +295,8 @@ pnpm test-data:clean       # Clean test data
 ## 📚 API Documentation
 
 ### Core Endpoints
+
+#### Issues & Communications
 - `GET /api/issues` - List issues with filters
 - `POST /api/issues` - Create new issue with photos
 - `GET /api/communications` - List communications
@@ -287,9 +305,32 @@ pnpm test-data:clean       # Clean test data
 - `POST /api/communication-templates/[id]/preview` - Preview template
 - `GET /api/issues/heatmap` - Building heat map data
 - `GET /api/issues/statistics` - Analytics data
+
+#### Documents
 - `GET /api/documents` - List documents with permissions
 - `POST /api/documents` - Upload document files
-- `GET /api/admin/units` - List units for admin access
+
+#### Building Management (Admin)
+- `GET /api/admin/buildings` - List all buildings
+- `GET /api/admin/buildings/[id]` - Get building details
+- `GET /api/admin/buildings/[id]/units` - List units with filters
+- `GET /api/admin/buildings/[id]/stats` - Building statistics
+- `PUT /api/admin/buildings/[id]` - Update building configuration
+
+#### Unit Management (Admin)
+- `GET /api/admin/units/[id]` - Get unit details with tenancy
+- `GET /api/admin/units/[id]/issues` - List unit-specific issues
+- `GET /api/admin/units/[id]/history` - Get occupancy history
+- `POST /api/admin/units/[id]/assign` - Assign tenant to unit
+- `POST /api/admin/units/[id]/vacate` - Mark unit as vacant
+
+#### Tenant Management (Admin)
+- `GET /api/admin/tenants` - List tenants with filters
+- `GET /api/admin/tenants/[id]` - Get tenant profile
+- `GET /api/admin/tenants/search` - Search tenants by query
+- `PUT /api/admin/tenants/[id]` - Update tenant information
+- `GET /api/admin/tenants/export` - Export tenant data as CSV
+- `POST /api/admin/tenants/bulk-action` - Perform bulk operations
 
 ### Authentication
 All API endpoints require authentication via Clerk session tokens. Role-based permissions are enforced at the API level.
@@ -303,20 +344,20 @@ All API endpoints require authentication via Clerk session tokens. Role-based pe
 - ✅ Granular permission system
 - ✅ E2E testing with CI/CD pipeline
 - ✅ Template preview and application system
-
-### In Progress 🚧
-- 🚧 Admin template management interface
-- 🚧 Permission inheritance and cascading
-
-### Completed ✅
-- ✅ Issue reporting with AI-powered categorization
-- ✅ Building heat maps and analytics dashboard
-- ✅ Communication logging with professional templates
-- ✅ Granular permission system
-- ✅ E2E testing with CI/CD pipeline
-- ✅ Template preview and application system
 - ✅ Document library with file management
 - ✅ Association pages (petitions, meetings, neighbors)
+- ✅ Building management dashboard with unit grid
+- ✅ Unit management with occupancy tracking
+- ✅ Tenant directory with search and filters
+- ✅ Tenant profiles with history and documents
+- ✅ Unit assignment workflow with transfers
+- ✅ Bulk operations and CSV export
+- ✅ Comprehensive audit logging
+
+### In Progress 🚧
+- 🚧 Tenant verification workflow (ID check, lease upload)
+- 🚧 Emergency contacts management
+- 🚧 Unit maintenance tracking
 
 ### Planned 📅
 - 📅 AI-powered rights assistant chatbot

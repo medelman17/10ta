@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Home, Users, AlertCircle, Search, ChevronRight, UserX } from 'lucide-react';
+import { Home, Users, AlertCircle, Search, ChevronRight, UserX, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePermissions } from '@/hooks/use-permissions';
 import { cn } from '@/lib/utils';
+import { UnitAssignmentModal } from '@/components/admin/unit-assignment-modal';
 
 interface UnitData {
   id: string;
@@ -46,6 +47,11 @@ export default function UnitsManagementPage() {
   const [floorFilter, setFloorFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [assignModalState, setAssignModalState] = useState<{
+    open: boolean;
+    unitId?: string;
+    unitNumber?: string;
+  }>({ open: false });
 
   const { hasAnyPermission } = usePermissions({ buildingId });
   const canManageUnits = hasAnyPermission(['manage_building', 'manage_unit_requests']);
@@ -239,10 +245,16 @@ export default function UnitsManagementPage() {
             <Card
               key={unit.id}
               className={cn(
-                'cursor-pointer transition-all hover:shadow-md border-2',
+                'cursor-pointer transition-all hover:shadow-md border-2 relative',
                 getUnitStatusColor(unit)
               )}
-              onClick={() => router.push(`/dashboard/admin/buildings/${buildingId}/units/${unit.id}`)}
+              onClick={(e) => {
+                // Prevent navigation if clicking on the assign button
+                if ((e.target as HTMLElement).closest('button')) {
+                  return;
+                }
+                router.push(`/dashboard/admin/buildings/${buildingId}/units/${unit.id}`);
+              }}
             >
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
@@ -268,10 +280,30 @@ export default function UnitsManagementPage() {
                     </p>
                   </div>
                 )}
-                {unit.status === 'VACANT' && unit.lastActivity && (
-                  <p className="text-xs text-muted-foreground">
-                    Vacant {Math.floor((Date.now() - new Date(unit.lastActivity).getTime()) / (1000 * 60 * 60 * 24))} days
-                  </p>
+                {unit.status === 'VACANT' && (
+                  <>
+                    {unit.lastActivity && (
+                      <p className="text-xs text-muted-foreground">
+                        Vacant {Math.floor((Date.now() - new Date(unit.lastActivity).getTime()) / (1000 * 60 * 60 * 24))} days
+                      </p>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAssignModalState({
+                          open: true,
+                          unitId: unit.id,
+                          unitNumber: unit.unitNumber,
+                        });
+                      }}
+                    >
+                      <UserPlus className="h-3 w-3 mr-1" />
+                      Assign
+                    </Button>
+                  </>
                 )}
                 {(unit.issues.open > 0 || unit.issues.inProgress > 0) && (
                   <p className="text-xs text-muted-foreground">
@@ -338,7 +370,25 @@ export default function UnitsManagementPage() {
                       )}
                     </td>
                     <td className="p-4">
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      {unit.status === 'VACANT' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAssignModalState({
+                              open: true,
+                              unitId: unit.id,
+                              unitNumber: unit.unitNumber,
+                            });
+                          }}
+                        >
+                          <UserPlus className="h-3 w-3 mr-1" />
+                          Assign
+                        </Button>
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -346,6 +396,17 @@ export default function UnitsManagementPage() {
             </table>
           </CardContent>
         </Card>
+      )}
+
+      {/* Assignment Modal */}
+      {assignModalState.unitId && assignModalState.unitNumber && (
+        <UnitAssignmentModal
+          open={assignModalState.open}
+          onOpenChange={(open) => setAssignModalState({ open })}
+          unitId={assignModalState.unitId}
+          unitNumber={assignModalState.unitNumber}
+          buildingId={buildingId}
+        />
       )}
     </div>
   );

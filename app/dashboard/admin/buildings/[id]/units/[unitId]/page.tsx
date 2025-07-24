@@ -11,10 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { usePermissions } from '@/hooks/use-permissions';
 import { format } from 'date-fns';
+import { UnitAssignmentModal } from '@/components/admin/unit-assignment-modal';
 
 export default function UnitDetailPage() {
   const params = useParams();
@@ -156,27 +156,20 @@ export default function UnitDetailPage() {
                 <p className="text-sm text-muted-foreground mb-3">
                   This unit is currently vacant
                 </p>
-                <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full">
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Assign Tenant
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Assign Tenant to Unit {unit.unitNumber}</DialogTitle>
-                      <DialogDescription>
-                        Search for a tenant to assign to this unit.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                      <p className="text-sm text-muted-foreground">
-                        Tenant assignment workflow coming soon...
-                      </p>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <Button 
+                  className="w-full" 
+                  onClick={() => setAssignDialogOpen(true)}
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Assign Tenant
+                </Button>
+                <UnitAssignmentModal
+                  open={assignDialogOpen}
+                  onOpenChange={setAssignDialogOpen}
+                  unitId={unitId}
+                  unitNumber={unit.unitNumber}
+                  buildingId={buildingId}
+                />
               </div>
             )}
           </CardContent>
