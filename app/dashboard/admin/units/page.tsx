@@ -1,10 +1,11 @@
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, isSuperUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UnitGrid from "./unit-grid";
 import PendingRequests from "./pending-requests";
+import UnitActions from "./unit-actions";
 
 export default async function UnitsManagementPage() {
   const user = await getCurrentUser();
@@ -111,8 +112,21 @@ export default async function UnitsManagementPage() {
     } : null,
   }));
   
+  const isSuper = await isSuperUser(user.email);
+  
   return (
     <div className="container mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Building Overview</h1>
+          <p className="text-muted-foreground">
+            Manage units and view occupancy for {currentBuilding.name}
+          </p>
+        </div>
+        {isSuper && (
+          <UnitActions buildingId={currentBuilding.id} />
+        )}
+      </div>
       <Tabs defaultValue="grid" className="space-y-4">
         <TabsList>
           <TabsTrigger value="grid">Unit Grid</TabsTrigger>
@@ -127,7 +141,7 @@ export default async function UnitsManagementPage() {
         </TabsList>
         
         <TabsContent value="grid" className="space-y-4">
-          <UnitGrid units={units} buildingId={currentBuilding.id} />
+          <UnitGrid units={units} buildingId={currentBuilding.id} isSuperUser={isSuper} />
         </TabsContent>
         
         <TabsContent value="requests" className="space-y-4">

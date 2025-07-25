@@ -20,6 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import UnitActions from "./unit-actions";
 
 interface Tenant {
   id: string;
@@ -47,9 +48,10 @@ interface Unit {
 interface UnitGridProps {
   units: Unit[];
   buildingId: string;
+  isSuperUser?: boolean;
 }
 
-export default function UnitGrid({ units }: UnitGridProps) {
+export default function UnitGrid({ units, buildingId, isSuperUser }: UnitGridProps) {
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   
   // Group units by floor
@@ -215,10 +217,22 @@ export default function UnitGrid({ units }: UnitGridProps) {
           {selectedUnit && (
             <>
               <SheetHeader>
-                <SheetTitle>Unit {selectedUnit.unitNumber}</SheetTitle>
-                <SheetDescription>
-                  Floor {selectedUnit.floor}, Line {selectedUnit.line}
-                </SheetDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <SheetTitle>Unit {selectedUnit.unitNumber}</SheetTitle>
+                    <SheetDescription>
+                      Floor {selectedUnit.floor}, Line {selectedUnit.line}
+                    </SheetDescription>
+                  </div>
+                  {isSuperUser && (
+                    <UnitActions
+                      unitId={selectedUnit.id}
+                      unitNumber={selectedUnit.unitNumber}
+                      buildingId={buildingId}
+                      hasTenants={selectedUnit.tenancies.length > 0}
+                    />
+                  )}
+                </div>
               </SheetHeader>
               
               <div className="mt-6 space-y-6">

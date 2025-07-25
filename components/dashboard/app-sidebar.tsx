@@ -151,6 +151,13 @@ const data = {
       ],
     },
   ],
+  navSuperUser: [
+    {
+      title: "Platform Management",
+      url: "/dashboard/admin/buildings",
+      icon: Building2,
+    },
+  ],
 }
 
 interface AppSidebarProps extends React.ComponentPropsWithoutRef<typeof Sidebar> {
@@ -165,9 +172,10 @@ interface AppSidebarProps extends React.ComponentPropsWithoutRef<typeof Sidebar>
     }>;
   };
   isAdmin?: boolean;
+  isSuperUser?: boolean;
 }
 
-export function AppSidebar({ user, isAdmin, ...props }: AppSidebarProps) {
+export function AppSidebar({ user, isAdmin, isSuperUser, ...props }: AppSidebarProps) {
   const { signOut } = useClerk();
   const router = useRouter();
   const currentUnit = user?.tenancies?.[0]?.unit;
@@ -257,6 +265,26 @@ export function AppSidebar({ user, isAdmin, ...props }: AppSidebarProps) {
                         ))}
                       </SidebarMenuSub>
                     ) : null}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        
+        {isSuperUser && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Platform Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {data.navSuperUser.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>

@@ -2,7 +2,7 @@ import { auth, currentUser as clerkCurrentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { grantSuperuserAccess } from "@/lib/superuser";
+import { grantSuperuserAccess, isSuperuserEmail } from "@/lib/superuser";
 
 export async function getCurrentUser() {
   const { userId } = await auth();
@@ -158,4 +158,8 @@ export async function checkUserNeedsOnboarding() {
   
   // User needs onboarding if they have no building roles
   return user.buildingRoles.length === 0;
+}
+
+export async function isSuperUser(email: string): Promise<boolean> {
+  return isSuperuserEmail(email);
 }

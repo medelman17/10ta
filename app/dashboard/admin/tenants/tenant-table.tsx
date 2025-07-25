@@ -5,13 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Building2, Home, Mail, Phone, Calendar, Search } from "lucide-react";
 import type { User, BuildingRole, Building, Tenancy, Unit } from "@prisma/client";
+import TenantActions from "./tenant-actions";
+import Link from "next/link";
 
 type TenantWithRelations = User & {
   buildingRoles: (BuildingRole & { building: Building })[];
   tenancies: (Tenancy & { unit: Unit })[];
 };
 
-export default function TenantTable({ tenants }: { tenants: TenantWithRelations[] }) {
+interface TenantTableProps {
+  tenants: TenantWithRelations[];
+  isSuperUser?: boolean;
+}
+
+export default function TenantTable({ tenants, isSuperUser }: TenantTableProps) {
   const [search, setSearch] = useState("");
   
   const filteredTenants = tenants.filter((tenant) => {
@@ -98,9 +105,20 @@ export default function TenantTable({ tenants }: { tenants: TenantWithRelations[
                     </div>
                   </td>
                   <td className="p-4">
-                    <Button variant="outline" size="sm">
-                      Manage
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/dashboard/admin/tenants/${tenant.id}`}>
+                          View
+                        </Link>
+                      </Button>
+                      {isSuperUser && (
+                        <TenantActions
+                          tenantId={tenant.id}
+                          tenantName={`${tenant.firstName || ''} ${tenant.lastName || tenant.email}`}
+                          hasIssues={false} // TODO: Check if tenant has issues
+                        />
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
