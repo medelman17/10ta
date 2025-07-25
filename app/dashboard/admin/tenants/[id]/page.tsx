@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
@@ -33,6 +33,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { usePermissions } from '@/hooks/use-permissions';
+import { useSuperUser } from '@/hooks/use-super-user';
+import { setHeaderAction } from '@/components/dashboard/page-header-context';
 import { format } from 'date-fns';
 
 interface EmergencyContact {
@@ -106,11 +108,32 @@ export default function TenantProfilePage() {
   });
 
   const buildingId = tenant?.currentTenancy?.unit.buildingId;
+  const isSuperUser = useSuperUser();
   
   const { hasAnyPermission } = usePermissions({ 
     buildingId: buildingId || '' 
   });
-  const canManageTenants = hasAnyPermission(['manage_building', 'manage_tenants']);
+  const canManageTenants = isSuperUser || hasAnyPermission(['manage_building', 'manage_tenants']);
+
+  const handleEditOpen = () => {
+    if (tenant) {
+      setEditData({
+        phone: tenant.phone || '',
+        shareContactInfo: tenant.shareContactInfo,
+        allowNeighborMessages: tenant.allowNeighborMessages,
+        publicIssuesByDefault: tenant.publicIssuesByDefault,
+      });
+      setEditDialogOpen(true);
+    }
+  };
+
+  // Set header action for Edit Profile button
+  useEffect(() => {
+    if (canManageTenants) {
+      setHeaderAction(handleEditOpen);
+    }
+    return () => setHeaderAction(null); // Cleanup on unmount
+  }, [canManageTenants, tenant]);
 
   const { data: issues } = useQuery({
     queryKey: ['tenant-issues', tenantId],
@@ -152,18 +175,6 @@ export default function TenantProfilePage() {
     },
   });
 
-  const handleEditOpen = () => {
-    if (tenant) {
-      setEditData({
-        phone: tenant.phone || '',
-        shareContactInfo: tenant.shareContactInfo,
-        allowNeighborMessages: tenant.allowNeighborMessages,
-        publicIssuesByDefault: tenant.publicIssuesByDefault,
-      });
-      setEditDialogOpen(true);
-    }
-  };
-
   const handleSaveEdit = () => {
     updateTenantMutation.mutate(editData);
   };
@@ -202,107 +213,57 @@ export default function TenantProfilePage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <Separator orientation="vertical" className="h-6" />
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              {getTenantName()}
-              {getVerificationStatus() === 'verified' ? (
-                <Badge variant="default">
-                  <UserCheck className="h-3 w-3 mr-1" />
-                  Verified
-                </Badge>
-              ) : (
-                <Badge variant="secondary">Unverified</Badge>
-              )}
-            </h1>
-            <p className="text-muted-foreground">{tenant.email}</p>
+    <div className="space-y-6">
+      {/* Overview Badges */}
+      <div className="flex flex-wrap gap-3">
+        <Badge variant="outline" className="px-3 py-2 h-auto flex items-center gap-2">
+          <Home className="h-4 w-4" />
+          <div className="flex flex-col items-start">
+            <span className="text-sm font-medium">
+              {tenant.currentTenancy ? tenant.currentTenancy.unit.unitNumber : 'No unit'}
+            </span>
+            {tenant.currentTenancy && (
+              <span className="text-xs text-muted-foreground">
+                {tenant.currentTenancy.unit.building.name}
+              </span>
+            )}
           </div>
-        </div>
-        <Button onClick={handleEditOpen}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Profile
-        </Button>
-      </div>
+        </Badge>
 
-      {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Unit</CardTitle>
-            <Home className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {tenant.currentTenancy ? (
-              <>
-                <div className="text-2xl font-bold">
-                  {tenant.currentTenancy.unit.unitNumber}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {tenant.currentTenancy.unit.building.name}
-                </p>
-              </>
-            ) : (
-              <div className="text-muted-foreground">No unit assigned</div>
+        <Badge variant="outline" className="px-3 py-2 h-auto flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          <div className="flex flex-col items-start">
+            <span className="text-sm font-medium">
+              {tenant.currentTenancy ? 
+                format(new Date(tenant.currentTenancy.startDate), 'MMM d, yyyy') : 
+                'N/A'
+              }
+            </span>
+            {tenant.currentTenancy && (
+              <span className="text-xs text-muted-foreground">
+                {Math.floor((Date.now() - new Date(tenant.currentTenancy.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30))} months
+              </span>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </Badge>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Move-in Date</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {tenant.currentTenancy ? (
-              <>
-                <div className="text-2xl font-bold">
-                  {format(new Date(tenant.currentTenancy.startDate), 'MMM d, yyyy')}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {Math.floor((Date.now() - new Date(tenant.currentTenancy.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30))} months
-                </p>
-              </>
-            ) : (
-              <div className="text-muted-foreground">N/A</div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Issues Reported</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{tenant._count.reportedIssues}</div>
-            <p className="text-xs text-muted-foreground">
+        <Badge variant="outline" className="px-3 py-2 h-auto flex items-center gap-2">
+          <AlertCircle className="h-4 w-4" />
+          <div className="flex flex-col items-start">
+            <span className="text-sm font-medium">{tenant._count.reportedIssues} issues</span>
+            <span className="text-xs text-muted-foreground">
               {issues?.filter((i: { status: string }) => i.status === 'OPEN').length || 0} open
-            </p>
-          </CardContent>
-        </Card>
+            </span>
+          </div>
+        </Badge>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Communications</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{tenant._count.communications}</div>
-            <p className="text-xs text-muted-foreground">Total interactions</p>
-          </CardContent>
-        </Card>
+        <Badge variant="outline" className="px-3 py-2 h-auto flex items-center gap-2">
+          <MessageSquare className="h-4 w-4" />
+          <div className="flex flex-col items-start">
+            <span className="text-sm font-medium">{tenant._count.communications} communications</span>
+            <span className="text-xs text-muted-foreground">Total interactions</span>
+          </div>
+        </Badge>
       </div>
 
       {/* Main Content */}

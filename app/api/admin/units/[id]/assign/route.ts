@@ -156,6 +156,10 @@ export async function POST(
     });
   } catch (error) {
     console.error('Error assigning tenant:', error);
-    return createErrorResponse(500, 'Failed to assign tenant');
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    return createErrorResponse(500, `Failed to assign tenant: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

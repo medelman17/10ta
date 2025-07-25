@@ -137,36 +137,66 @@ export default function IssueReportForm({ user, currentTenancy }: IssueReportFor
     for (const file of files) {
       setIsAnalyzing(true);
       try {
-        // Create blob URL for the photo (will be used for actual analysis in production)
-        URL.createObjectURL(file);
+        // Upload photo to Vercel Blob first
+        const formData = new FormData();
+        formData.append('file', file);
         
-        // For demo, we'll simulate the analysis since we need the actual uploaded URL
-        // In production, you'd upload to Vercel Blob first, then analyze
-        const mockAnalysis: PhotoAnalysis = {
-          category: "plumbing",
-          severity: "high", 
-          description: "Water leak visible near pipe connection",
-          location: "bathroom",
-          suggested_action: "Request immediate plumbing repair to prevent water damage",
-          confidence: 0.85
-        };
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
         
-        setPhotoAnalyses(prev => [...prev, mockAnalysis]);
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          console.error('Upload API error:', uploadResponse.status, errorText);
+          throw new Error(`Failed to upload photo: ${uploadResponse.status}`);
+        }
+        
+        const { url: imageUrl } = await uploadResponse.json();
+        
+        // Now analyze the uploaded photo
+        const analysisResponse = await fetch('/api/issues/analyze-photo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageUrl }),
+        });
+        
+        if (!analysisResponse.ok) {
+          const errorText = await analysisResponse.text();
+          console.error('Analysis API error:', analysisResponse.status, errorText);
+          throw new Error(`Failed to analyze photo: ${analysisResponse.status}`);
+        }
+        
+        const analysis: PhotoAnalysis = await analysisResponse.json();
+        
+        setPhotoAnalyses(prev => [...prev, analysis]);
         
         // Update form with first analysis if form is empty
         if (!formData.title && photoAnalyses.length === 0) {
           setFormData(prev => ({
             ...prev,
-            category: mockAnalysis.category,
-            severity: mockAnalysis.severity,
-            location: mockAnalysis.location,
-            description: mockAnalysis.description,
-            title: `${mockAnalysis.category.charAt(0).toUpperCase() + mockAnalysis.category.slice(1)} issue in ${mockAnalysis.location.replace('_', ' ')}`
+            category: analysis.category,
+            severity: analysis.severity,
+            location: analysis.location,
+            description: analysis.description,
+            title: `${analysis.category.charAt(0).toUpperCase() + analysis.category.slice(1)} issue in ${analysis.location.replace('_', ' ')}`
           }));
         }
         
       } catch (error) {
         console.error("Photo analysis failed:", error);
+        // Add a fallback analysis in case of error
+        const fallbackAnalysis: PhotoAnalysis = {
+          category: "other",
+          severity: "medium",
+          description: "Unable to analyze image automatically. Please provide details manually.",
+          location: "other",
+          suggested_action: "Please describe the issue in the form below",
+          confidence: 0.0
+        };
+        setPhotoAnalyses(prev => [...prev, fallbackAnalysis]);
       } finally {
         setIsAnalyzing(false);
       }
@@ -212,7 +242,9 @@ export default function IssueReportForm({ user, currentTenancy }: IssueReportFor
       if (response.ok) {
         router.push("/dashboard/issues/my");
       } else {
-        throw new Error("Failed to create issue");
+        const errorText = await response.text();
+        console.error("Issue creation error:", response.status, errorText);
+        throw new Error(`Failed to create issue: ${response.status} - ${errorText}`);
       }
     } catch (error) {
       console.error("Error submitting issue:", error);

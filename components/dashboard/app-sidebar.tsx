@@ -14,6 +14,7 @@ import {
   Shield,
   LogOut,
   Library,
+  Plus,
 } from "lucide-react"
 import { useClerk } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
@@ -61,10 +62,6 @@ const data = {
         {
           title: "Building Issues",
           url: "/dashboard/issues/building",
-        },
-        {
-          title: "Report Issue",
-          url: "/dashboard/issues/new",
         },
       ],
     },
@@ -214,10 +211,20 @@ export function AppSidebar({ user, isAdmin, isSuperUser, ...props }: AppSidebarP
             <SidebarMenu>
               {data.navMain.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild className="relative">
                     <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
+                      {item.title === "Issues" && (
+                        <Plus 
+                          className="ml-auto h-4 w-4 hover:bg-accent rounded" 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            router.push("/dashboard/issues/new");
+                          }}
+                        />
+                      )}
                     </a>
                   </SidebarMenuButton>
                   {item.items?.length ? (

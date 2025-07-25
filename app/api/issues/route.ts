@@ -168,13 +168,16 @@ export const GET = withAuth(async (req: Request) => {
 
 // POST /api/issues - Create a new issue
 export const POST = withAuth(async (req: Request) => {
+  console.log('=== Issue Creation API Called ===');
   try {
     const user = await getCurrentUser();
+    console.log('User found:', user ? `${user.id} (${user.email})` : 'null');
     if (!user) {
       return createErrorResponse(401, 'Authentication required');
     }
 
     const formData = await req.formData();
+    console.log('FormData received. Keys:', Array.from(formData.keys()));
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const category = formData.get('category') as string;
@@ -183,6 +186,10 @@ export const POST = withAuth(async (req: Request) => {
     const isPublic = formData.get('isPublic') === 'true';
     const unitId = formData.get('unitId') as string;
     const buildingId = formData.get('buildingId') as string;
+    
+    console.log('Extracted form fields:', {
+      title, description, category, severity, location, isPublic, unitId, buildingId
+    });
     
     // Validate required fields
     if (!title || !description || !category || !severity || !unitId || !buildingId) {
@@ -251,12 +258,25 @@ export const POST = withAuth(async (req: Request) => {
     }
 
     // Create issue
+    console.log('Creating issue with data:', {
+      title,
+      description,
+      category,
+      severity: severity.toUpperCase(),
+      location,
+      isPublic,
+      reporterId: user.id,
+      unitId,
+      buildingId,
+      mediaCount: mediaUrls.length
+    });
+    
     const issue = await prisma.issue.create({
       data: {
         title,
         description,
-        category: category as 'PLUMBING' | 'ELECTRICAL' | 'HVAC' | 'STRUCTURAL' | 'PEST' | 'SAFETY' | 'NOISE' | 'OTHER',
-        severity: severity as 'EMERGENCY' | 'HIGH' | 'MEDIUM' | 'LOW',
+        category: category,
+        severity: severity.toUpperCase() as 'EMERGENCY' | 'HIGH' | 'MEDIUM' | 'LOW',
         location,
         isPublic,
         reporterId: user.id,

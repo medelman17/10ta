@@ -9,7 +9,21 @@ export const hasPermission = cache(async (
   buildingId: string,
   permission: Permission
 ): Promise<boolean> => {
-  // Check if user has the specific permission
+  // First check if user is a superuser
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true }
+  });
+  
+  if (user) {
+    const superUserEmails = process.env.NEXT_PUBLIC_SUPER_USER_EMAILS?.split(',').map(email => email.trim().toLowerCase()) || [];
+    if (superUserEmails.includes(user.email.toLowerCase())) {
+      // Superusers have all permissions
+      return true;
+    }
+  }
+  
+  // Otherwise, check regular permissions
   const permissionRecord = await prisma.adminPermission.findUnique({
     where: {
       userId_buildingId_permission: {
@@ -61,6 +75,21 @@ export const getUserPermissions = cache(async (
   userId: string,
   buildingId: string
 ): Promise<Permission[]> => {
+  // First check if user is a superuser
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true }
+  });
+  
+  if (user) {
+    const superUserEmails = process.env.NEXT_PUBLIC_SUPER_USER_EMAILS?.split(',').map(email => email.trim().toLowerCase()) || [];
+    if (superUserEmails.includes(user.email.toLowerCase())) {
+      // Superusers get all permissions
+      return Object.values(PERMISSIONS) as Permission[];
+    }
+  }
+  
+  // Otherwise, check regular permissions
   const permissions = await prisma.adminPermission.findMany({
     where: {
       userId,

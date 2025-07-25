@@ -95,6 +95,7 @@ export function requireAuth(handler: ApiHandler): ApiHandler {
       method: req.method,
       headers,
       body: req.body,
+      duplex: 'half' as any, // Required for Node.js when passing a body
     });
     
     return handler(modifiedReq);

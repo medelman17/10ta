@@ -1,29 +1,22 @@
-import { getCurrentUser } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import Link from "next/link";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import IssueList from "../issue-list";
+import { setHeaderAction } from "@/components/dashboard/page-header-context";
 
-export default async function MyIssuesPage() {
-  const user = await getCurrentUser();
-  
-  if (!user) {
-    redirect("/sign-in");
-  }
+export default function MyIssuesPage() {
+  const router = useRouter();
 
-  return (
-    <div className="container mx-auto">
-      <div className="flex justify-end mb-8">
-        <Button asChild>
-          <Link href="/dashboard/issues/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Report Issue
-          </Link>
-        </Button>
-      </div>
-      
-      <IssueList scope="my" />
-    </div>
-  );
+  useEffect(() => {
+    // Set the header action when component mounts
+    setHeaderAction(() => {
+      router.push("/dashboard/issues/new");
+    });
+
+    // Clean up when component unmounts
+    return () => setHeaderAction(null);
+  }, [router]);
+
+  return <IssueList scope="my" />;
 }

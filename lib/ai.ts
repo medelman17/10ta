@@ -1,5 +1,5 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { generateObject } from 'ai';
+import { generateText } from 'ai';
 import { z } from 'zod';
 
 const anthropic = createAnthropic({
@@ -7,28 +7,21 @@ const anthropic = createAnthropic({
 });
 
 export const IssueAnalysisSchema = z.object({
-  category: z.enum(['plumbing', 'electrical', 'hvac', 'structural', 'pest', 'safety', 'noise', 'other']),
-  severity: z.enum(['emergency', 'high', 'medium', 'low']),
+  category: z.string(),
+  severity: z.string(),
   description: z.string(),
   location: z.string(),
   suggested_action: z.string(),
-  confidence: z.number().min(0).max(1),
+  confidence: z.number(),
 });
 
 export type IssueAnalysis = z.infer<typeof IssueAnalysisSchema>;
 
 export async function analyzeIssuePhoto(imageUrl: string): Promise<IssueAnalysis> {
-  const { object } = await generateObject({
+  console.log('analyzeIssuePhoto called with URL:', imageUrl);
+  
+  const { text } = await generateText({
     model: anthropic('claude-3-5-sonnet-20241022'),
-    schema: IssueAnalysisSchema,
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: 'analyze-issue-photo',
-      metadata: {
-        purpose: 'tenant-issue-analysis',
-        feature: 'issue-reporting',
-      },
-    },
     messages: [
       {
         role: 'user',
@@ -36,16 +29,18 @@ export async function analyzeIssuePhoto(imageUrl: string): Promise<IssueAnalysis
           {
             type: 'text',
             text: `Analyze this photo for property/housing issues that a tenant might report to their landlord. 
-            
-            Focus on identifying:
-            - Type of issue (plumbing, electrical, structural damage, pests, safety hazards, HVAC problems, general maintenance)
-            - Severity level (emergency = immediate danger/habitability, urgent = affects daily living, routine = cosmetic/minor)
-            - Location within the property
-            - Detailed description of what you see
-            - What action the tenant should request from the landlord
-            - Your confidence level in this analysis (0.0 to 1.0)
-            
-            Be specific and actionable in your descriptions. Consider tenant rights and habitability standards.`,
+
+Respond with ONLY a JSON object in this exact format:
+{
+  "category": "string - most accurate category (plumbing, electrical, hvac, structural, pest, safety, noise, elevator, mechanical, maintenance, or create specific like 'elevator maintenance', 'roofing', 'windows', etc.)",
+  "severity": "string - emergency, high, medium, or low",
+  "description": "string - detailed description of what you observe",
+  "location": "string - where in building/unit this is located",
+  "suggested_action": "string - recommended action to address this",
+  "confidence": "number - confidence level from 0.0 to 1.0"
+}
+
+Be specific and accurate. Only describe what you can clearly observe.`,
           },
           {
             type: 'image',
@@ -56,5 +51,27 @@ export async function analyzeIssuePhoto(imageUrl: string): Promise<IssueAnalysis
     ],
   });
 
-  return object as IssueAnalysis;
+  console.log('AI response text:', text);
+
+  try {
+    const analysis = JSON.parse(text);
+    console.log('Parsed analysis:', analysis);
+    
+    // Validate with Zod
+    const validatedAnalysis = IssueAnalysisSchema.parse(analysis);
+    return validatedAnalysis;
+  } catch (parseError) {
+    console.error('Failed to parse AI response:', parseError);
+    console.error('Raw response:', text);
+    
+    // Fallback analysis
+    return {
+      category: 'other',
+      severity: 'medium',
+      description: 'Unable to analyze image automatically. Please provide details manually.',
+      location: 'other',
+      suggested_action: 'Please describe the issue in the form below',
+      confidence: 0.0
+    };
+  }
 }

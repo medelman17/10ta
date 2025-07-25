@@ -93,14 +93,8 @@ export default async function MeetingsPage() {
     .sort((a, b) => new Date(b.scheduledFor).getTime() - new Date(a.scheduledFor).getTime());
 
   return (
-    <div className="container mx-auto space-y-6">
-      <div className="flex justify-between items-start">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold">Association Meetings</h1>
-          <p className="text-muted-foreground">
-            Participate in tenant meetings, view minutes, and stay involved in community decisions.
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div className="flex justify-end">
         <Button asChild>
           <Link href="/dashboard/association/meetings/new">
             <Plus className="mr-2 h-4 w-4" />

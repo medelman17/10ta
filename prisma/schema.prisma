@@ -204,7 +204,7 @@ model Issue {
 
   title       String
   description String        @db.Text
-  category    IssueCategory
+  category    String        // Dynamic category - can be any string
   severity    IssueSeverity
   status      IssueStatus   @default(OPEN)
   location    String        @default("other")
@@ -214,7 +214,7 @@ model Issue {
 
   // AI features
   embedding           Unsupported("vector(1536)")?
-  aiSuggestedCategory IssueCategory?
+  aiSuggestedCategory String?        // AI can suggest any category
   aiSuggestedSeverity IssueSeverity?
 
   // Relationships
@@ -243,16 +243,7 @@ model Issue {
   @@index([createdAt])
 }
 
-enum IssueCategory {
-  PLUMBING
-  ELECTRICAL
-  HVAC
-  STRUCTURAL
-  PEST
-  SAFETY
-  NOISE
-  OTHER
-}
+// IssueCategory enum removed - now using dynamic string categories
 
 enum IssueSeverity {
   EMERGENCY // Immediate danger

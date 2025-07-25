@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { Role } from "@prisma/client";
 
-const SUPERUSER_EMAILS = ['mike.edelman@gmail.com'];
+const SUPERUSER_EMAILS = process.env.NEXT_PUBLIC_SUPER_USER_EMAILS?.split(',').map(email => email.trim().toLowerCase()) || [];
 
 export async function grantSuperuserAccess(userId: string, email: string) {
   if (!SUPERUSER_EMAILS.includes(email.toLowerCase())) {

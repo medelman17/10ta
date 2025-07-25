@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
-import { withAuth, createErrorResponse } from '@/lib/api-middleware';
+import { createErrorResponse } from '@/lib/api-middleware';
 import { hasPermission } from '@/lib/auth-helpers';
 import { PERMISSIONS } from '@/lib/permissions';
 
 // GET /api/admin/units - Fetch units for admin use
-export const GET = withAuth(async (req: Request) => {
+export async function GET(req: Request) {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -51,17 +51,23 @@ export const GET = withAuth(async (req: Request) => {
     console.error('Error fetching units:', error);
     return createErrorResponse(500, 'Internal server error');
   }
-});
+}
 
 // POST /api/admin/units - Create a new unit
-export const POST = withAuth(async (req: Request) => {
+export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return createErrorResponse(401, 'Authentication required');
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (error) {
+      return createErrorResponse(400, 'Invalid JSON in request body');
+    }
+    
     const { buildingId, unitNumber, floor, line } = body;
 
     if (!buildingId || !unitNumber || !floor || !line) {
@@ -121,4 +127,4 @@ export const POST = withAuth(async (req: Request) => {
     console.error('Error creating unit:', error);
     return createErrorResponse(500, 'Failed to create unit');
   }
-});
+}
