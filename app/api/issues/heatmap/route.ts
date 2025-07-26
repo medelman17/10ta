@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
-import { IssueCategory, IssueSeverity, IssueStatus } from '@prisma/client';
+import { IssueSeverity, IssueStatus } from '@prisma/client';
 import { withAuth, createErrorResponse } from '@/lib/api-middleware';
 import { hasPermission } from '@/lib/auth-helpers';
 import { PERMISSIONS } from '@/lib/permissions';
@@ -100,7 +100,7 @@ export const GET = withAuth(async (req: Request) => {
       buildingId: string;
       isPublic: boolean;
       createdAt?: { gte: Date };
-      category?: { in: IssueCategory[] };
+      category?: { in: string[] };
       severity?: { in: IssueSeverity[] };
       status?: { in: IssueStatus[] };
     };
@@ -115,7 +115,7 @@ export const GET = withAuth(async (req: Request) => {
     }
 
     if (categories.length > 0) {
-      issueFilters.category = { in: categories as IssueCategory[] };
+      issueFilters.category = { in: categories as string[] };
     }
 
     if (severities.length > 0) {

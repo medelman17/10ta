@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, X, Upload, Image as ImageIcon } from "lucide-react";
+import { Loader2, X, Upload } from "lucide-react";
 import Image from "next/image";
 
 interface EditIssueSheetProps {

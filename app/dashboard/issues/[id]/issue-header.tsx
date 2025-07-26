@@ -11,14 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 
-const severityColors = {
+const severityColors: Record<string, string> = {
   EMERGENCY: "bg-red-100 text-red-800 border-red-300",
   HIGH: "bg-orange-100 text-orange-800 border-orange-300",
   MEDIUM: "bg-yellow-100 text-yellow-800 border-yellow-300",
   LOW: "bg-green-100 text-green-800 border-green-300",
 };
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   OPEN: "bg-blue-100 text-blue-800 border-blue-300",
   IN_PROGRESS: "bg-purple-100 text-purple-800 border-purple-300",
   AWAITING_LANDLORD: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -27,7 +27,12 @@ const statusColors = {
 };
 
 interface IssueHeaderProps {
-  issue: any;
+  issue: {
+    id: string;
+    title: string;
+    severity: string;
+    status: string;
+  };
   isReporter: boolean;
   isAdmin: boolean;
   onEditClick: () => void;

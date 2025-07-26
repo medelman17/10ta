@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
-import { IssueCategory, IssueSeverity, IssueStatus } from '@prisma/client';
+import { IssueSeverity, IssueStatus } from '@prisma/client';
 import { withAuth, createErrorResponse } from '@/lib/api-middleware';
 import { hasPermission } from '@/lib/auth-helpers';
 import { PERMISSIONS } from '@/lib/permissions';
@@ -189,7 +189,7 @@ interface IssueWithUnit {
   updatedAt: Date;
   status: IssueStatus;
   severity: IssueSeverity;
-  category: IssueCategory;
+  category: string;
   unit: {
     unitNumber: string;
   };

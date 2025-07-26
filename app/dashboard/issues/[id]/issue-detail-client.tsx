@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, MapPinIcon, UserIcon, MessageSquare, Plus } from "lucide-react";
 import { setHeaderAction } from "@/components/dashboard/page-header-context";
@@ -13,14 +11,48 @@ import { EditIssueSheet } from "@/components/issues/edit-issue-sheet";
 import { IssueHeader } from "./issue-header";
 
 interface IssueDetailClientProps {
-  issue: any;
-  communications: any[];
+  issue: {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    severity: string;
+    location: string;
+    status: string;
+    isPublic: boolean;
+    createdAt: string;
+    reporter: {
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+    };
+    unit: {
+      unitNumber: string;
+    };
+    building: {
+      name: string;
+    };
+    media: Array<{
+      id: string;
+      url: string;
+    }>;
+    _count: {
+      communications: number;
+    };
+  };
+  communications: Array<{
+    id: string;
+    type: string;
+    direction: string;
+    communicationDate: string;
+    subject: string | null;
+    contactName: string | null;
+  }>;
   isReporter: boolean;
   isAdmin: boolean;
 }
 
 export function IssueDetailClient({ issue, communications, isReporter, isAdmin }: IssueDetailClientProps) {
-  const router = useRouter();
   const [editSheetOpen, setEditSheetOpen] = useState(false);
 
   useEffect(() => {
@@ -31,8 +63,7 @@ export function IssueDetailClient({ issue, communications, isReporter, isAdmin }
         isReporter={isReporter}
         isAdmin={isAdmin}
         onEditClick={() => setEditSheetOpen(true)}
-      />,
-      true // isCustom = true to indicate we're providing a custom header
+      />
     );
 
     return () => setHeaderAction(null);
@@ -87,7 +118,7 @@ export function IssueDetailClient({ issue, communications, isReporter, isAdmin }
                   <div>
                     <h3 className="font-semibold mb-2">Photos</h3>
                     <div className="grid grid-cols-2 gap-4">
-                      {issue.media.map((media: any) => (
+                      {issue.media.map((media) => (
                         <div key={media.id} className="relative aspect-video">
                           <Image
                             src={media.url}
@@ -123,7 +154,7 @@ export function IssueDetailClient({ issue, communications, isReporter, isAdmin }
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {communications.map((comm: any) => (
+                    {communications.map((comm) => (
                       <div
                         key={comm.id}
                         className="flex items-center justify-between p-3 bg-muted rounded-lg"

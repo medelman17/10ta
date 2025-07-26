@@ -4,15 +4,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  ArrowLeft, 
   Home, 
   Phone, 
   Mail, 
   Calendar,
   AlertCircle,
-  MessageSquare,
-  UserCheck,
-  Edit
+  MessageSquare
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -133,7 +130,7 @@ export default function TenantProfilePage() {
       setHeaderAction(handleEditOpen);
     }
     return () => setHeaderAction(null); // Cleanup on unmount
-  }, [canManageTenants, tenant]);
+  }, [canManageTenants, tenant, handleEditOpen]);
 
   const { data: issues } = useQuery({
     queryKey: ['tenant-issues', tenantId],

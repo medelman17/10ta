@@ -125,7 +125,7 @@ export async function PATCH(
     const updatedIssue = await prisma.$transaction(async (tx) => {
       // Handle media removal
       if (removedMediaIds && removedMediaIds.length > 0) {
-        await tx.issueMedia.deleteMany({
+        await tx.media.deleteMany({
           where: {
             id: { in: removedMediaIds },
             issueId: id,
@@ -135,7 +135,7 @@ export async function PATCH(
 
       // Handle new media additions
       if (newMediaUrls && newMediaUrls.length > 0) {
-        await tx.issueMedia.createMany({
+        await tx.media.createMany({
           data: newMediaUrls.map((url: string) => ({
             issueId: id,
             url,

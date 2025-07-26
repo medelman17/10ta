@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
 import IssueList from "../issue-list";
 import { setHeaderAction } from "@/components/dashboard/page-header-context";
 

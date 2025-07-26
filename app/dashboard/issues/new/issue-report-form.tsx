@@ -138,12 +138,12 @@ export default function IssueReportForm({ user, currentTenancy }: IssueReportFor
       setIsAnalyzing(true);
       try {
         // Upload photo to Vercel Blob first
-        const formData = new FormData();
-        formData.append('file', file);
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
         
         const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
-          body: formData,
+          body: uploadFormData,
         });
         
         if (!uploadResponse.ok) {

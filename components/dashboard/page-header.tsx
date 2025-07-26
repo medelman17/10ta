@@ -128,10 +128,14 @@ export function PageHeader() {
           <p className="text-sm text-muted-foreground">{tenant.email}</p>
         </div>
         {headerAction && (
-          <Button onClick={headerAction}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Profile
-          </Button>
+          typeof headerAction === 'function' ? (
+            <Button onClick={headerAction}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          ) : (
+            headerAction
+          )
         )}
       </div>
     );
@@ -158,10 +162,14 @@ export function PageHeader() {
         )}
       </div>
       {headerAction && (pathname === '/dashboard/issues/building' || pathname === '/dashboard/issues/my') && (
-        <Button onClick={headerAction}>
-          <Plus className="h-4 w-4 mr-2" />
-          Report Issue
-        </Button>
+        typeof headerAction === 'function' ? (
+          <Button onClick={headerAction}>
+            <Plus className="h-4 w-4 mr-2" />
+            Report Issue
+          </Button>
+        ) : (
+          headerAction
+        )
       )}
     </div>
   );

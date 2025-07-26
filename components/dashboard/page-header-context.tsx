@@ -6,7 +6,7 @@ import { ReactNode } from 'react';
 let globalHeaderAction: (() => void) | ReactNode | null = null;
 let subscribers: Array<() => void> = [];
 
-export function setHeaderAction(action: (() => void) | ReactNode | null, isCustom = false) {
+export function setHeaderAction(action: (() => void) | ReactNode | null) {
   globalHeaderAction = action;
   // Notify all subscribers
   subscribers.forEach(callback => callback());
